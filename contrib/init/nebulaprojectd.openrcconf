@@ -1,0 +1,33 @@
+# /etc/conf.d/nebulaprojectd: config file for /etc/init.d/nebulaprojectd
+
+# Config file location
+#BITCOIND_CONFIGFILE="/etc/nebulaproject/nebulaproject.conf"
+
+# What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
+#BITCOIND_PIDDIR="/var/run/nebulaprojectd"
+
+# What filename to give the pidfile
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/nebulaprojectd.pid"
+
+# Where to write nebulaprojectd data (be mindful that the blockchain is large)
+#BITCOIND_DATADIR="/var/lib/nebulaprojectd"
+
+# User and group to own nebulaprojectd process
+#BITCOIND_USER="nebulaproject"
+#BITCOIND_GROUP="nebulaproject"
+
+# Path to nebulaprojectd executable
+#BITCOIND_BIN="/usr/bin/nebulaprojectd"
+
+# Nice value to run nebulaprojectd under
+#BITCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#BITCOIND_OPTS=""
+
+# The timeout in seconds OpenRC will wait for bitcoind to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+BITCOIND_SIGTERM_TIMEOUT=60

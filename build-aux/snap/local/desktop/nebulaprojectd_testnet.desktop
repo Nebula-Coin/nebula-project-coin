@@ -1,0 +1,15 @@
+# http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.0.html
+
+[Desktop Entry]
+Encoding=UTF-8
+Name=NEBULAPROJECT Core Daemon SNAP
+Comment=testnet
+GenericName=NEBULAPROJECT Digital Currency Daemon Client testnet network
+Exec=nebulaproject-core.daemon-testnet %u
+Terminal=true
+Type=Application
+Icon=${SNAP}/share/pixmaps/nebulaproject_testnet.png
+MimeType=x-scheme-handler/nbla;
+Categories=X-Office;X-Finance;
+Keywords=internet;nebulaproject;znbla;core;wallet;daemon;testnet;snap;launchpad;crypto;digital;currency;coin;token;zerocoin;
+Version=1.0

@@ -1,0 +1,3 @@
+usr/local/bin/nebulaprojectd usr/bin
+usr/local/bin/nebulaproject-cli usr/bin
+debian/examples/nebulaproject.conf etc/nebulaproject

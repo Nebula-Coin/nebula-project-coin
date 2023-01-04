@@ -1,0 +1,15 @@
+# http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.0.html
+
+[Desktop Entry]
+Encoding=UTF-8
+Name=NEBULAPROJECT Core
+Comment=NEBULAPROJECT Core QT main network
+GenericName=NEBULAPROJECT Digital Currency QT client main network
+Exec=nebulaproject-core.qt %u
+Terminal=false
+Type=Application
+Icon=${SNAP}/share/pixmaps/nebulaproject.png
+MimeType=x-scheme-handler/nebulaproject;
+Categories=X-Office;X-Finance;
+Keywords=internet;nebulaproject;znbla;nbla;core;wallet;qt;main;snap;launchpad;crypto;digital;currency;coin;token;zerocoin;
+Version=1.0
