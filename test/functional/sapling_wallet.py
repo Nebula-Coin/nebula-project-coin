@@ -4,7 +4,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
-from test_framework.test_framework import PivxTestFramework
+from test_framework.test_framework import NebulaprojectTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
@@ -19,7 +19,7 @@ from decimal import Decimal
 from time import sleep
 
 # Test wallet behaviour with Sapling addresses
-class WalletSaplingTest(PivxTestFramework):
+class WalletSaplingTest(NebulaprojectTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 4
@@ -320,7 +320,7 @@ class WalletSaplingTest(PivxTestFramework):
         assert_equal(self.nodes[0].getshieldbalance(saplingAddr0), Decimal('20.9'))  # 12.9 prev balance + 8 received
         assert_equal(self.nodes[1].getshieldbalance(saplingAddr1), Decimal('2.95'))  # 1.95 prev balance + 1 received
         assert_equal(self.nodes[0].getshieldbalance(saplingAddr2), Decimal('4.4'))  # 3.9 prev balance + 0.5 received
-        # Balance of node 0 is: prev_balance - 1 PIV (+fee) sent externally +  250 PIV matured coinbase
+        # Balance of node 0 is: prev_balance - 1 NBLA (+fee) sent externally +  250 NBLA matured coinbase
         assert_equal(self.nodes[0].getbalance(), satoshi_round(prev_balance + Decimal('249') - Decimal(fee)))
 
         # Now shield some funds using sendtoaddress

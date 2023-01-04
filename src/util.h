@@ -13,7 +13,7 @@
 #define BITCOIN_UTIL_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/pivx-config.h"
+#include "config/nebulaproject-config.h"
 #endif
 
 #include "fs.h"
@@ -43,12 +43,12 @@ public:
     boost::signals2::signal<std::string (const char* psz)> Translate;
 };
 
-extern const char * const PIVX_CONF_FILENAME;
-extern const char * const PIVX_PID_FILENAME;
-extern const char * const PIVX_MASTERNODE_CONF_FILENAME;
+extern const char * const NEBULAPROJECT_CONF_FILENAME;
+extern const char * const NEBULAPROJECT_PID_FILENAME;
+extern const char * const NEBULAPROJECT_MASTERNODE_CONF_FILENAME;
 extern const char * const DEFAULT_DEBUGLOGFILE;
 
-//PIVX only features
+//NEBULAPROJECT only features
 
 extern std::atomic<bool> fMasterNode;
 extern bool fLiteMode;
@@ -241,7 +241,7 @@ void SetThreadPriority(int nPriority);
 template <typename Callable>
 void TraceThread(const char* name, Callable func)
 {
-    std::string s = strprintf("pivx-%s", name);
+    std::string s = strprintf("nebulaproject-%s", name);
     util::ThreadRename(s.c_str());
     try {
         LogPrintf("%s thread start\n", name);

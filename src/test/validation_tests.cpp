@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
-#include "test/test_pivx.h"
+#include "test/test_nebulaproject.h"
 #include "primitives/transaction.h"
 #include "sapling/sapling_validation.h"
 #include "tiertwo/specialtx_validation.h"

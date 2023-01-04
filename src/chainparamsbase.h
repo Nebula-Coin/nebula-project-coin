@@ -11,8 +11,8 @@
 #include <vector>
 
 /**
- * CBaseChainParams defines the base parameters (shared between pivx-cli and pivxd)
- * of a given instance of the Pivx system.
+ * CBaseChainParams defines the base parameters (shared between nebulaproject-cli and nebulaprojectd)
+ * of a given instance of the Nebulaproject system.
  */
 class CBaseChainParams
 {

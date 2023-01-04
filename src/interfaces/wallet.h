@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_INTERFACES_WALLET_H
-#define PIVX_INTERFACES_WALLET_H
+#ifndef NEBULAPROJECT_INTERFACES_WALLET_H
+#define NEBULAPROJECT_INTERFACES_WALLET_H
 
 #include <amount.h>
 #include "wallet/wallet.h"

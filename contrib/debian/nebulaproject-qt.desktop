@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=NEBULAPROJECT Core
+Comment=NEBULAPROJECT P2P Cryptocurrency
+Comment[fr]=NEBULAPROJECT, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=NEBULAPROJECT, eşten eşe kriptografik sanal para birimi
+Exec=nebulaproject-qt %u
+Terminal=false
+Type=Application
+Icon=nebulaproject128
+MimeType=x-scheme-handler/nebulaproject;
+Categories=Office;Finance;
+StartupWMClass=Nebulaproject-qt

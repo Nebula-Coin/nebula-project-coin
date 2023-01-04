@@ -7,7 +7,7 @@
 
 #include "key.h"
 #include "key_io.h"
-#include "test/test_pivx.h"
+#include "test/test_nebulaproject.h"
 
 #include <string>
 #include <vector>

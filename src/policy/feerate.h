@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_POLICY_FEERATE_H
-#define PIVX_POLICY_FEERATE_H
+#ifndef NEBULAPROJECT_POLICY_FEERATE_H
+#define NEBULAPROJECT_POLICY_FEERATE_H
 
 #include "amount.h"
 #include "serialize.h"
@@ -14,7 +14,7 @@
 extern const std::string CURRENCY_UNIT;
 
 /**
- * Fee rate in PIV per kilobyte: CAmount / kB
+ * Fee rate in NBLA per kilobyte: CAmount / kB
  */
 class CFeeRate
 {
@@ -45,4 +45,4 @@ public:
     }
 };
 
-#endif //  PIVX_POLICY_FEERATE_H
+#endif //  NEBULAPROJECT_POLICY_FEERATE_H

@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
-from test_framework.test_framework import PivxTestFramework
+from test_framework.test_framework import NebulaprojectTestFramework
 from test_framework.util import (
     assert_equal,
 )
@@ -11,7 +11,7 @@ from test_framework.util import (
 import random
 
 # Test getblockindexstats RPC results
-class BlockIndexStatsTest(PivxTestFramework):
+class BlockIndexStatsTest(NebulaprojectTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
@@ -30,7 +30,7 @@ class BlockIndexStatsTest(PivxTestFramework):
                 utxo = spendable.pop()
                 inputs.append({"txid": utxo["txid"], "vout": utxo["vout"]})
                 outVal += float(utxo["amount"])
-            # add 1 PIV "change" output 50% of the times
+            # add 1 NBLA "change" output 50% of the times
             if random.randint(1, 2) == 1 and outVal > 1.0 + fee:
                 outputs = {node_to.getnewaddress(): round(outVal - 1.0 - fee, 8),
                            node_from.getnewaddress(): 1.0}
@@ -48,7 +48,7 @@ class BlockIndexStatsTest(PivxTestFramework):
                 outVal += float(spendable.pop()["amount"])
             dest = node_to.getnewshieldaddress() if fToShield else node_to.getnewaddress()
             from_str = "from_shield" if fFromShield else "from_transparent"
-            # add 1 PIV "change" output 50% of the times
+            # add 1 NBLA "change" output 50% of the times
             if random.randint(1, 2) == 1 and outVal > 1.0 + fee:
                 change_dest = node_from.getnewshieldaddress() if fFromShield else node_from.getnewaddress()
                 outputs = [{"address": dest, "amount": round(outVal - 1.0 - fee, 8)},
@@ -79,7 +79,7 @@ class BlockIndexStatsTest(PivxTestFramework):
         self.sync_all()
 
         # Mine 2 blocks. For each block, the miner creates 30 shield notes.
-        # miner creates 20 notes of 10 PIV + 9 notes of 5 PIV + 1 note of 4 PIV (using 1.0 fee)
+        # miner creates 20 notes of 10 NBLA + 9 notes of 5 NBLA + 1 note of 4 NBLA (using 1.0 fee)
         self.log.info("Creating 60 Shield notes...")
         for _ in range(2):
             outputs = []

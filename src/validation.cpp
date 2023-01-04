@@ -49,9 +49,9 @@
 #include "utilmoneystr.h"
 #include "validationinterface.h"
 #include "warnings.h"
-#include "zpivchain.h"
-#include "zpiv/zerocoin.h"
-#include "zpiv/zpivmodule.h"
+#include "znblachain.h"
+#include "znbla/zerocoin.h"
+#include "znbla/znblamodule.h"
 
 #include <future>
 
@@ -62,7 +62,7 @@
 
 
 #if defined(NDEBUG)
-#error "PIVX cannot be compiled without assertions."
+#error "NEBULAPROJECT cannot be compiled without assertions."
 #endif
 
 /**
@@ -103,7 +103,7 @@ size_t nCoinCacheUsage = 5000 * 300;
 /* If the tip is older than this (in seconds), the node is considered to be in initial block download. */
 int64_t nMaxTipAge = DEFAULT_MAX_TIP_AGE;
 
-/** Fees smaller than this (in upiv) are considered zero fee (for relaying, mining and transaction creation)
+/** Fees smaller than this (in unbla) are considered zero fee (for relaying, mining and transaction creation)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
  * so it's still 10 times lower comparing to bitcoin.
  */
@@ -782,33 +782,89 @@ CAmount GetBlockValue(int nHeight)
     if (Params().IsRegTestNet()) {
         return 250 * COIN;
     }
-    // Testnet high-inflation blocks [2, 200] with value 250k PIV
+    // Testnet high-inflation blocks [2, 200] with value 250k NBLA
     const bool isTestnet = Params().IsTestnet();
     if (isTestnet && nHeight < 201 && nHeight > 1) {
         return 250000 * COIN;
     }
     // Mainnet/Testnet block reward reduction schedule
-    const int nLast = Params().GetConsensus().vUpgrades[Consensus::UPGRADE_ZC_V2].nActivationHeight;
-    if (nHeight > nLast)   return 5    * COIN;
-    if (nHeight > 648000)  return 4.5  * COIN;
-    if (nHeight > 604800)  return 9    * COIN;
-    if (nHeight > 561600)  return 13.5 * COIN;
-    if (nHeight > 518400)  return 18   * COIN;
-    if (nHeight > 475200)  return 22.5 * COIN;
-    if (nHeight > 432000)  return 27   * COIN;
-    if (nHeight > 388800)  return 31.5 * COIN;
-    if (nHeight > 345600)  return 36   * COIN;
-    if (nHeight > 302400)  return 40.5 * COIN;
-    if (nHeight > 151200)  return 45   * COIN;
-    if (nHeight > 86400)   return 225  * COIN;
-    if (nHeight !=1)       return 250  * COIN;
-    // Premine for 6 masternodes at block 1
-    return 60001 * COIN;
+	int64_t ret = 0;
+	if (nHeight <= 100) {
+        ret = COIN * 2000;
+	} 
+	else if (nHeight < 1602) {
+        ret = COIN * 50;
+    }
+    else if (nHeight <= 360000) {
+        ret = COIN * 55;
+    }
+    else if (nHeight <= 720000) {
+        ret = COIN * 34;
+    }
+    else if (nHeight <= 1440000) {
+        ret = COIN * 21;
+    }
+    else if (nHeight <= 2880000) {
+        ret = COIN * 13;
+    }
+    else if (nHeight <= 5760000) {
+        ret = COIN * 8;
+    }
+    else if (nHeight <= 11520000) {
+        ret = COIN * 5;
+    }
+    else if (nHeight <= 23040000) {
+        ret = COIN * 3;
+    }
+	else if (nHeight <= 46080000) {
+        ret = COIN * 2;
+    }
+    else {
+        ret = COIN * 0;
+	}
+	return ret;
 }
 
 int64_t GetMasternodePayment()
 {
-    return 3 * COIN;
+     // -- Added By DigiWarfare for nHeight in MN Payments
+	CBlockIndex* chainTip = chainActive.Tip();
+	const int nHeight = chainTip->nHeight;
+	
+	// Future: refactor function callers to use this line directly.
+    //return Params().GetConsensus().nMNBlockReward;
+	const bool isPoSActive = Params().GetConsensus().NetworkUpgradeActive(nHeight, Consensus::UPGRADE_POS);
+	int64_t ret = 0;
+    if (!isPoSActive) {
+        ret = COIN * 0;
+    }
+    else if(nHeight <= 360000){
+        ret = GetBlockValue(nHeight) * 35 / 100;
+    }
+    else if(nHeight <= 720000){
+        ret = GetBlockValue(nHeight) * 40 / 100;
+    }
+    else if(nHeight <= 1440000){
+        ret = GetBlockValue(nHeight) * 45 / 100;
+    }
+    else if(nHeight <= 2880000){
+        ret = GetBlockValue(nHeight) * 50 / 100;
+    }
+    else if(nHeight <= 5760000){
+        ret = GetBlockValue(nHeight) * 55 / 100;
+    }
+    else if(nHeight <= 11520000){
+        ret = GetBlockValue(nHeight) * 60 / 100;
+    }
+    else if(nHeight <= 23040000){
+        ret = GetBlockValue(nHeight) * 65 / 100;
+    }
+    else {
+        ret = GetBlockValue(nHeight) * 70 / 100;
+    }
+
+	//LogPrintf("Masternode Payment : amount=%s : block=%s\n", ret, nHeight);
+    return ret;
 }
 
 bool IsInitialBlockDownload()
@@ -1359,7 +1415,7 @@ static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck()
 {
-    util::ThreadRename("pivx-scriptch");
+    util::ThreadRename("nebulaproject-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -1528,7 +1584,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 if (isPublicSpend) {
                     libzerocoin::ZerocoinParams* params = consensus.Zerocoin_Params(false);
                     PublicCoinSpend publicSpend(params);
-                    if (!ZPIVModule::ParseZerocoinPublicSpend(txIn, tx, state, publicSpend)){
+                    if (!ZNBLAModule::ParseZerocoinPublicSpend(txIn, tx, state, publicSpend)){
                         return false;
                     }
                     nValueIn += publicSpend.getDenomination() * COIN;
@@ -2710,7 +2766,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                 nHeight = (*mi).second->nHeight + 1;
         }
 
-        // PIVX
+        // NEBULAPROJECT
         // It is entierly possible that we don't have enough data and this could fail
         // (i.e. the block could indeed be valid). Store the block for later consideration
         // but issue an initial reject message.
@@ -2801,11 +2857,11 @@ bool CheckWork(const CBlock& block, const CBlockIndex* const pindexPrev)
     }
 
     if (block.nBits != nBitsRequired) {
-        // Pivx Specific reference to the block with the wrong threshold was used.
+        // Nebulaproject Specific reference to the block with the wrong threshold was used.
         const Consensus::Params& consensus = Params().GetConsensus();
-        if ((block.nTime == (uint32_t) consensus.nPivxBadBlockTime) &&
-                (block.nBits == (uint32_t) consensus.nPivxBadBlockBits)) {
-            // accept PIVX block minted with incorrect proof of work threshold
+        if ((block.nTime == (uint32_t) consensus.nNebulaprojectBadBlockTime) &&
+                (block.nBits == (uint32_t) consensus.nNebulaprojectBadBlockBits)) {
+            // accept NEBULAPROJECT block minted with incorrect proof of work threshold
             return true;
         }
 
@@ -3066,18 +3122,18 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
         const CTransaction &stakeTxIn = *block.vtx[1];
 
         // Inputs
-        std::vector<CTxIn> pivInputs;
-        std::vector<CTxIn> zPIVInputs;
+        std::vector<CTxIn> nblaInputs;
+        std::vector<CTxIn> zNBLAInputs;
 
         for (const CTxIn& stakeIn : stakeTxIn.vin) {
             if(stakeIn.IsZerocoinSpend()){
-                zPIVInputs.push_back(stakeIn);
+                zNBLAInputs.push_back(stakeIn);
             }else{
-                pivInputs.push_back(stakeIn);
+                nblaInputs.push_back(stakeIn);
             }
         }
-        const bool hasPIVInputs = !pivInputs.empty();
-        const bool hasZPIVInputs = !zPIVInputs.empty();
+        const bool hasNBLAInputs = !nblaInputs.empty();
+        const bool hasZNBLAInputs = !zNBLAInputs.empty();
 
         // ZC started after PoS.
         // Check for serial double spent on the same block, TODO: Move this to the proper method..
@@ -3100,7 +3156,7 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
                         if (isPublicSpend) {
                             libzerocoin::ZerocoinParams* params = consensus.Zerocoin_Params(false);
                             PublicCoinSpend publicSpend(params);
-                            if (!ZPIVModule::ParseZerocoinPublicSpend(in, tx, state, publicSpend)){
+                            if (!ZNBLAModule::ParseZerocoinPublicSpend(in, tx, state, publicSpend)){
                                 return false;
                             }
                             spend = publicSpend;
@@ -3116,10 +3172,10 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
                     }
                 }
                 if(tx.IsCoinStake()) continue;
-                if(hasPIVInputs) {
+                if(hasNBLAInputs) {
                     // Check if coinstake input is double spent inside the same block
-                    for (const CTxIn& pivIn : pivInputs)
-                        if(pivIn.prevout == in.prevout)
+                    for (const CTxIn& nblaIn : nblaInputs)
+                        if(nblaIn.prevout == in.prevout)
                             // double spent coinstake input inside block
                             return error("%s: double spent coinstake input inside block", __func__);
                 }
@@ -3159,12 +3215,12 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
                     for (const CTxIn& in: t.vin) {
                         // If this input is a zerocoin spend, and the coinstake has zerocoin inputs
                         // then store the serials for later check
-                        if(hasZPIVInputs && in.IsZerocoinSpend())
+                        if(hasZNBLAInputs && in.IsZerocoinSpend())
                             vBlockSerials.push_back(TxInToZerocoinSpend(in).getCoinSerialNumber());
 
                         // Loop through every input of the staking tx
-                        if (hasPIVInputs) {
-                            for (const CTxIn& stakeIn : pivInputs)
+                        if (hasNBLAInputs) {
+                            for (const CTxIn& stakeIn : nblaInputs)
                                 // check if the tx input is double spending any coinstake input
                                 if (stakeIn.prevout == in.prevout)
                                     return state.DoS(100, error("%s: input already spent on a previous block", __func__));
@@ -3183,10 +3239,10 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
             // Split height
             splitHeight = prev->nHeight;
 
-            // Now that this loop if completed. Check if we have zPIV inputs.
-            if(hasZPIVInputs) {
-                for (const CTxIn& zPivInput : zPIVInputs) {
-                    libzerocoin::CoinSpend spend = TxInToZerocoinSpend(zPivInput);
+            // Now that this loop if completed. Check if we have zNBLA inputs.
+            if(hasZNBLAInputs) {
+                for (const CTxIn& zNblaInput : zNBLAInputs) {
+                    libzerocoin::CoinSpend spend = TxInToZerocoinSpend(zNblaInput);
 
                     // First check if the serials were not already spent on the forked blocks.
                     CBigNum coinSerial = spend.getCoinSerialNumber();
@@ -3206,7 +3262,7 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
 
                     if (!ContextualCheckZerocoinSpendNoSerialCheck(stakeTxIn, &spend, pindex->nHeight, UINT256_ZERO))
                         return state.DoS(100,error("%s: forked chain ContextualCheckZerocoinSpend failed for tx %s", __func__,
-                                                   stakeTxIn.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-zpiv");
+                                                   stakeTxIn.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-znbla");
 
                 }
             }
@@ -3226,11 +3282,11 @@ bool AcceptBlock(const CBlock& block, CValidationState& state, CBlockIndex** ppi
             }
         } else {
             if(!isBlockFromFork)
-                for (const CTxIn& zPivInput : zPIVInputs) {
-                        libzerocoin::CoinSpend spend = TxInToZerocoinSpend(zPivInput);
+                for (const CTxIn& zNblaInput : zNBLAInputs) {
+                        libzerocoin::CoinSpend spend = TxInToZerocoinSpend(zNblaInput);
                         if (!ContextualCheckZerocoinSpend(stakeTxIn, &spend, pindex->nHeight, UINT256_ZERO))
                             return state.DoS(100,error("%s: main chain ContextualCheckZerocoinSpend failed for tx %s", __func__,
-                                    stakeTxIn.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-zpiv");
+                                    stakeTxIn.GetHash().GetHex()), REJECT_INVALID, "bad-txns-invalid-znbla");
                 }
 
         }

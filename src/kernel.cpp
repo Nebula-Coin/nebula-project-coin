@@ -15,8 +15,8 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validation.h"
-#include "zpivchain.h"
-#include "zpiv/zpos.h"
+#include "znblachain.h"
+#include "znbla/zpos.h"
 
 /**
  * CStakeKernel Constructor
@@ -107,8 +107,8 @@ bool LoadStakeInput(const CBlock& block, const CBlockIndex* pindexPrev, std::uni
     // Construct the stakeinput object
     const CTxIn& txin = block.vtx[1]->vin[0];
     stake = txin.IsZerocoinSpend() ?
-            std::unique_ptr<CStakeInput>(new CLegacyZPivStake()) :
-            std::unique_ptr<CStakeInput>(CPivStake::NewPivStake(txin));
+            std::unique_ptr<CStakeInput>(new CLegacyZNblaStake()) :
+            std::unique_ptr<CStakeInput>(CNblaStake::NewNblaStake(txin));
 
     return stake && stake->InitFromTxIn(txin);
 }
@@ -172,7 +172,7 @@ bool CheckProofOfStake(const CBlock& block, std::string& strError, const CBlockI
     }
 
     // zPoS disabled (ContextCheck) before blocks V7, and the tx input signature is in CoinSpend
-    if (stakeInput->IsZPIV()) return true;
+    if (stakeInput->IsZNBLA()) return true;
 
     // Verify tx input signature
     CTxOut stakePrevout;

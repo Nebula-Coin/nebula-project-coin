@@ -377,7 +377,7 @@ public:
     size_t DynamicMemoryUsage() const;
 
     /**
-     * Amount of pivx coming in to a transaction
+     * Amount of nebulaproject coming in to a transaction
      * Note that lightweight clients may not know anything besides the hash of previous transactions,
      * so may not be able to calculate this.
      *
@@ -445,7 +445,7 @@ private:
 };
 
 //! Utility function to add all of a transaction's outputs to a cache.
-// PIVX: When check is false, this assumes that overwrites are never possible due to BIP34 always in effect
+// NEBULAPROJECT: When check is false, this assumes that overwrites are never possible due to BIP34 always in effect
 // When check is true, the underlying view may be queried to determine whether an addition is
 // an overwrite.
 // When fSkipInvalid is true, the invalid_out list is checked before adding the coin.

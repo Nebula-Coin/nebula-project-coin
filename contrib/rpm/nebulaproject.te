@@ -1,0 +1,81 @@
+policy_module(nebulaproject, 1.100.1)
+
+########################################
+#
+# Declarations
+#
+
+type nebulaproject_t;
+type nebulaproject_exec_t;
+init_daemon_domain(nebulaproject_t, nebulaproject_exec_t)
+
+permissive nebulaproject_t;
+
+type nebulaproject_initrc_exec_t;
+init_script_file(nebulaproject_initrc_exec_t)
+
+type nebulaproject_conf_t;
+files_type(nebulaproject_conf_t)
+
+type nebulaproject_var_lib_t;
+files_type(nebulaproject_var_lib_t)
+
+type nebulaproject_var_run_t;
+files_type(nebulaproject_var_run_t)
+
+type nebulaproject_port_t;
+corenet_port(nebulaproject_port_t)
+
+########################################
+#
+# nebulaproject local policy
+#
+allow nebulaproject_t self:process { fork };
+
+allow nebulaproject_t self:fifo_file rw_fifo_file_perms;
+allow nebulaproject_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(nebulaproject_t, nebulaproject_conf_t, nebulaproject_conf_t)
+manage_files_pattern(nebulaproject_t, nebulaproject_conf_t, nebulaproject_conf_t)
+
+manage_dirs_pattern(nebulaproject_t, nebulaproject_var_lib_t, nebulaproject_var_lib_t)
+manage_files_pattern(nebulaproject_t, nebulaproject_var_lib_t, nebulaproject_var_lib_t)
+files_var_lib_filetrans(nebulaproject_t, nebulaproject_var_lib_t, { dir file })
+
+manage_dirs_pattern(nebulaproject_t, nebulaproject_var_run_t, nebulaproject_var_run_t)
+manage_files_pattern(nebulaproject_t, nebulaproject_var_run_t, nebulaproject_var_run_t)
+
+sysnet_dns_name_resolve(nebulaproject_t)
+corenet_all_recvfrom_unlabeled(nebulaproject_t)
+
+allow nebulaproject_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(nebulaproject_t)
+corenet_tcp_sendrecv_generic_node(nebulaproject_t)
+corenet_tcp_sendrecv_all_ports(nebulaproject_t)
+corenet_tcp_bind_generic_node(nebulaproject_t)
+
+gen_require(`
+    type nebulaproject_port_t;
+')
+allow nebulaproject_t nebulaproject_port_t:tcp_socket name_bind;
+
+gen_require(`
+    type nebulaproject_port_t;
+')
+allow nebulaproject_t nebulaproject_port_t:tcp_socket name_connect;
+
+domain_use_interactive_fds(nebulaproject_t)
+
+files_read_etc_files(nebulaproject_t)
+
+miscfiles_read_localization(nebulaproject_t)
+
+sysnet_dns_name_resolve(nebulaproject_t)
+
+allow nebulaproject_t nebulaproject_exec_t:file execute_no_trans;
+allow nebulaproject_t self:process setsched;
+corecmd_exec_ls(nebulaproject_t)
+corenet_tcp_connect_http_port(nebulaproject_t)
+dev_read_urand(nebulaproject_t)
+fs_getattr_xattr_fs(nebulaproject_t)
+kernel_read_system_state(nebulaproject_t)

@@ -15,7 +15,7 @@
 #include "uint256.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "test/test_pivx.h"
+#include "test/test_nebulaproject.h"
 
 #include <vector>
 
@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_CASE(rolling_bloom)
     }
 
     // false positive rate is 1%, so we should get about 100 hits if
-    // testing 10,000 random keys. We get worst-case false positive
+    // testing 50,000 random keys. We get worst-case false positive
     // behavior when the filter is as full as possible, which is
     // when we've inserted one minus an integer multiple of nElement*2.
     unsigned int nHits = 0;

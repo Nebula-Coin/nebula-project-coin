@@ -6,7 +6,7 @@
 #include "random.h"
 #include "scheduler.h"
 #if defined(HAVE_CONFIG_H)
-#include "config/pivx-config.h"
+#include "config/nebulaproject-config.h"
 #endif
 
 #include <boost/random/mersenne_twister.hpp>

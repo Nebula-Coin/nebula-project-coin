@@ -2,10 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_SAPLING_TEST_FIXTURE_H
-#define PIVX_SAPLING_TEST_FIXTURE_H
+#ifndef NEBULAPROJECT_SAPLING_TEST_FIXTURE_H
+#define NEBULAPROJECT_SAPLING_TEST_FIXTURE_H
 
-#include "test/test_pivx.h"
+#include "test/test_nebulaproject.h"
 
 /**
  * Testing setup that configures a complete environment for Sapling testing.
@@ -16,4 +16,4 @@ struct SaplingTestingSetup : public TestingSetup {
 };
 
 
-#endif //PIVX_SAPLING_TEST_FIXTURE_H
+#endif //NEBULAPROJECT_SAPLING_TEST_FIXTURE_H

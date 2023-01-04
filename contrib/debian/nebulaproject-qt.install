@@ -1,0 +1,6 @@
+usr/local/bin/nebulaproject-qt usr/bin
+share/pixmaps/nebulaproject32.xpm usr/share/pixmaps
+share/pixmaps/nebulaproject16.xpm usr/share/pixmaps
+share/pixmaps/nebulaproject128.png usr/share/pixmaps
+debian/nebulaproject-qt.desktop usr/share/applications
+debian/nebulaproject-qt.protocol usr/share/kde4/services/

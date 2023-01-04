@@ -10,7 +10,7 @@
 #include "sync.h"
 #include "utilstrencodings.h"
 #include "utilmoneystr.h"
-#include "test/test_pivx.h"
+#include "test/test_nebulaproject.h"
 
 #include <stdint.h>
 #include <vector>
@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE(test_ToUpper)
 BOOST_AUTO_TEST_CASE(test_Capitalize)
 {
     BOOST_CHECK_EQUAL(Capitalize(""), "");
-    BOOST_CHECK_EQUAL(Capitalize("pivx"), "Pivx");
+    BOOST_CHECK_EQUAL(Capitalize("nebulaproject"), "Nebulaproject");
     BOOST_CHECK_EQUAL(Capitalize("\x00\xfe\xff"), "\x00\xfe\xff");
 }
 

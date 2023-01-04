@@ -136,7 +136,7 @@ public:
 };
 
 /**
- * PIVX RPC command dispatcher.
+ * NEBULAPROJECT RPC command dispatcher.
  */
 class CRPCTable
 {

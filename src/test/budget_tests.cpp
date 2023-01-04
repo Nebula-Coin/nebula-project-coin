@@ -2,7 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "test_pivx.h"
+#include "test_nebulaproject.h"
 
 #include "budget/budgetmanager.h"
 #include "tinyformat.h"

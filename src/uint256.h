@@ -5,8 +5,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_UINT256_H
-#define PIVX_UINT256_H
+#ifndef NEBULAPROJECT_UINT256_H
+#define NEBULAPROJECT_UINT256_H
 
 #include "arith_uint256.h"
 #include <assert.h>
@@ -141,4 +141,4 @@ const uint256 UINT256_ZERO = uint256();
 const uint256 UINT256_ONE = uint256("0000000000000000000000000000000000000000000000000000000000000001");
 const uint256 UINT256_MAX = uint256("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
-#endif // PIVX_UINT256_H
+#endif // NEBULAPROJECT_UINT256_H

@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_INVALID_H
-#define PIVX_INVALID_H
+#ifndef NEBULAPROJECT_INVALID_H
+#define NEBULAPROJECT_INVALID_H
 
 #include <set>
 #include <string>
@@ -21,4 +21,4 @@ namespace invalid_out
     bool LoadOutpoints();
 }
 
-#endif //PIVX_INVALID_H
+#endif //NEBULAPROJECT_INVALID_H

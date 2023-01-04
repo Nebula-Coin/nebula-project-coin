@@ -8,10 +8,10 @@
 #include "txdb.h"
 #include "wallet/wallet.h"
 
-CPivStake* CPivStake::NewPivStake(const CTxIn& txin)
+CNblaStake* CNblaStake::NewNblaStake(const CTxIn& txin)
 {
     if (txin.IsZerocoinSpend()) {
-        error("%s: unable to initialize CPivStake from zerocoin spend", __func__);
+        error("%s: unable to initialize CNblaStake from zerocoin spend", __func__);
         return nullptr;
     }
 
@@ -35,29 +35,29 @@ CPivStake* CPivStake::NewPivStake(const CTxIn& txin)
         return nullptr;
     }
 
-    return new CPivStake(txPrev->vout[txin.prevout.n],
+    return new CNblaStake(txPrev->vout[txin.prevout.n],
                          txin.prevout,
                          pindexFrom);
 }
 
-bool CPivStake::GetTxOutFrom(CTxOut& out) const
+bool CNblaStake::GetTxOutFrom(CTxOut& out) const
 {
     out = outputFrom;
     return true;
 }
 
-bool CPivStake::CreateTxIn(CWallet* pwallet, CTxIn& txIn, uint256 hashTxOut)
+bool CNblaStake::CreateTxIn(CWallet* pwallet, CTxIn& txIn, uint256 hashTxOut)
 {
     txIn = CTxIn(outpointFrom.hash, outpointFrom.n);
     return true;
 }
 
-CAmount CPivStake::GetValue() const
+CAmount CNblaStake::GetValue() const
 {
     return outputFrom.nValue;
 }
 
-bool CPivStake::CreateTxOuts(CWallet* pwallet, std::vector<CTxOut>& vout, CAmount nTotal, const bool onlyP2PK)
+bool CNblaStake::CreateTxOuts(CWallet* pwallet, std::vector<CTxOut>& vout, CAmount nTotal, const bool onlyP2PK)
 {
     std::vector<valtype> vSolutions;
     txnouttype whichType;
@@ -106,24 +106,24 @@ bool CPivStake::CreateTxOuts(CWallet* pwallet, std::vector<CTxOut>& vout, CAmoun
     return true;
 }
 
-CDataStream CPivStake::GetUniqueness() const
+CDataStream CNblaStake::GetUniqueness() const
 {
-    //The unique identifier for a PIV stake is the outpoint
+    //The unique identifier for a NBLA stake is the outpoint
     CDataStream ss(SER_NETWORK, 0);
     ss << outpointFrom.n << outpointFrom.hash;
     return ss;
 }
 
 //The block that the UTXO was added to the chain
-const CBlockIndex* CPivStake::GetIndexFrom() const
+const CBlockIndex* CNblaStake::GetIndexFrom() const
 {
     // Sanity check, pindexFrom is set on the constructor.
-    if (!pindexFrom) throw std::runtime_error("CPivStake: uninitialized pindexFrom");
+    if (!pindexFrom) throw std::runtime_error("CNblaStake: uninitialized pindexFrom");
     return pindexFrom;
 }
 
 // Verify stake contextual checks
-bool CPivStake::ContextCheck(int nHeight, uint32_t nTime)
+bool CNblaStake::ContextCheck(int nHeight, uint32_t nTime)
 {
     const Consensus::Params& consensus = Params().GetConsensus();
     // Get Stake input block time/height

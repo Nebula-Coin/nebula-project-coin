@@ -4,7 +4,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
-from test_framework.test_framework import PivxTestFramework
+from test_framework.test_framework import NebulaprojectTestFramework
 
 from test_framework.messages import (
     CTransaction,
@@ -19,7 +19,7 @@ from test_framework.util import (
 from decimal import Decimal
 from io import BytesIO
 
-class MalleableSigsTest(PivxTestFramework):
+class MalleableSigsTest(NebulaprojectTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 1
@@ -34,8 +34,8 @@ class MalleableSigsTest(PivxTestFramework):
         z_addr = node.getnewshieldaddress()
         shield_to = [{"address": z_addr, "amount": Decimal('10')}]
 
-        # Create rawtx shielding 10 PIV
-        self.log.info("Shielding 10 PIV...")
+        # Create rawtx shielding 10 NBLA
+        self.log.info("Shielding 10 NBLA...")
         rawtx_hex = node.rawshieldsendmany("from_transparent", shield_to)
         self.log.info("Raw tx created")
 

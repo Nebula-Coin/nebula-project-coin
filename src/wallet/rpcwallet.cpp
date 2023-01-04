@@ -22,7 +22,7 @@
 #include "utilmoneystr.h"
 #include "wallet.h"
 #include "walletdb.h"
-#include "zpivchain.h"
+#include "znblachain.h"
 
 #include "sapling/sapling_operation.h"
 #include "sapling/transaction_builder.h"
@@ -136,7 +136,7 @@ UniValue getaddressinfo(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
                 "getaddressinfo ( \"address\" )\n"
-                "\nReturn information about the given PIVX address.\n"
+                "\nReturn information about the given NEBULAPROJECT address.\n"
                 "Some of the information will only be present if the address is in the active wallet.\n"
                 "Metadata for shield addresses is available only if the wallet is unlocked.\n"
                 "{Result:\n"
@@ -477,7 +477,7 @@ UniValue getnewaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
             "getnewaddress ( \"label\" )\n"
-            "\nReturns a new PIVX address for receiving payments.\n"
+            "\nReturns a new NEBULAPROJECT address for receiving payments.\n"
             "If 'label' is specified, it is added to the address book \n"
             "so payments received with the address will be associated with 'label'.\n"
 
@@ -485,7 +485,7 @@ UniValue getnewaddress(const JSONRPCRequest& request)
             "1. \"label\"        (string, optional) The label name for the address to be linked to. if not provided, the default label \"\" is used. It can also be set to the empty string \"\" to represent the default label. The label does not need to exist, it will be created if there is no label by the given name.\n"
 
             "\nResult:\n"
-            "\"pivxaddress\"    (string) The new pivx address\n"
+            "\"nebulaprojectaddress\"    (string) The new nebulaproject address\n"
 
             "\nExamples:\n" +
             HelpExampleCli("getnewaddress", "") + HelpExampleRpc("getnewaddress", ""));
@@ -499,14 +499,14 @@ UniValue getnewstakingaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
             "getnewstakingaddress ( \"label\" )\n"
-            "\nReturns a new PIVX cold staking address for receiving delegated cold stakes.\n"
+            "\nReturns a new NEBULAPROJECT cold staking address for receiving delegated cold stakes.\n"
 
             "\nArguments:\n"
             "1. \"label\"        (string, optional) The label name for the address to be linked to. if not provided, the default label \"\" is used. It can also be set to the empty string \"\" to represent the default label. The label does not need to exist, it will be created if there is no label by the given name.\n"
 
 
             "\nResult:\n"
-            "\"pivxaddress\"    (string) The new pivx address\n"
+            "\"nebulaprojectaddress\"    (string) The new nebulaproject address\n"
 
             "\nExamples:\n" +
             HelpExampleCli("getnewstakingaddress", "") + HelpExampleRpc("getnewstakingaddress", ""));
@@ -692,13 +692,13 @@ UniValue delegatoradd(const JSONRPCRequest& request)
     bool isStakingAddress = false;
     CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStakingAddress);
     if (!IsValidDestination(dest) || isStakingAddress)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT address");
 
     const std::string strLabel = (request.params.size() > 1 ? request.params[1].get_str() : "");
 
     const CKeyID* keyID = boost::get<CKeyID>(&dest);
     if (!keyID)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get KeyID from PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get KeyID from NEBULAPROJECT address");
 
     return pwalletMain->SetAddressBook(*keyID, strLabel, AddressBook::AddressBookPurpose::DELEGATOR);
 }
@@ -724,14 +724,14 @@ UniValue delegatorremove(const JSONRPCRequest& request)
     bool isStakingAddress = false;
     CTxDestination dest = DecodeDestination(request.params[0].get_str(), isStakingAddress);
     if (!IsValidDestination(dest) || isStakingAddress)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT address");
 
     const CKeyID* keyID = boost::get<CKeyID>(&dest);
     if (!keyID)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get KeyID from PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get KeyID from NEBULAPROJECT address");
 
     if (!pwalletMain->HasAddressBook(*keyID))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get PIVX address from addressBook");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unable to get NEBULAPROJECT address from addressBook");
 
     std::string label = "";
     auto optAdd = pwalletMain->GetAddressBookEntry(dest);
@@ -781,7 +781,7 @@ UniValue listdelegators(const JSONRPCRequest& request)
             "[\n"
             "   {\n"
             "   \"label\": \"yyy\",    (string) Address label\n"
-            "   \"address\": \"xxx\",  (string) PIVX address string\n"
+            "   \"address\": \"xxx\",  (string) NEBULAPROJECT address string\n"
             "   }\n"
             "  ...\n"
             "]\n"
@@ -807,7 +807,7 @@ UniValue liststakingaddresses(const JSONRPCRequest& request)
             "[\n"
             "   {\n"
             "   \"label\": \"yyy\",  (string) Address label\n"
-            "   \"address\": \"xxx\",  (string) PIVX address string\n"
+            "   \"address\": \"xxx\",  (string) NEBULAPROJECT address string\n"
             "   }\n"
             "  ...\n"
             "]\n"
@@ -867,7 +867,7 @@ UniValue getrawchangeaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 1)
         throw std::runtime_error(
             "getrawchangeaddress\n"
-            "\nReturns a new PIVX address, for receiving change.\n"
+            "\nReturns a new NEBULAPROJECT address, for receiving change.\n"
             "This is for use with raw transactions, NOT normal use.\n"
 
             "\nResult:\n"
@@ -898,11 +898,11 @@ UniValue setlabel(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 2)
         throw std::runtime_error(
-            "setlabel \"pivxaddress\" \"label\"\n"
+            "setlabel \"nebulaprojectaddress\" \"label\"\n"
             "\nSets the label associated with the given address.\n"
 
             "\nArguments:\n"
-            "1. \"pivxaddress\"   (string, required) The pivx address to be associated with a label.\n"
+            "1. \"nebulaprojectaddress\"   (string, required) The nebulaproject address to be associated with a label.\n"
             "2. \"label\"         (string, required) The label to assign to the address.\n"
 
             "\nExamples:\n" +
@@ -912,7 +912,7 @@ UniValue setlabel(const JSONRPCRequest& request)
 
     CTxDestination dest = DecodeDestination(request.params[0].get_str());
     if (!IsValidDestination(dest))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT address");
 
     std::string old_label = pwalletMain->GetNameForAddressBookEntry(dest);
     std::string label = LabelFromValue(request.params[1]);
@@ -941,7 +941,7 @@ void SendMoney(const CTxDestination& address, CAmount nValue, CTransactionRef& t
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
     }
 
-    // Parse PIVX address
+    // Parse NEBULAPROJECT address
     CScript scriptPubKey = GetScriptForDestination(address);
 
     // Create and send the transaction
@@ -1011,13 +1011,13 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
-            "sendtoaddress \"pivxaddress\" amount ( \"comment\" \"comment-to\" )\n"
+            "sendtoaddress \"nebulaprojectaddress\" amount ( \"comment\" \"comment-to\" )\n"
             "\nSend an amount to a given address. The amount is a real and is rounded to the nearest 0.00000001\n" +
             HelpRequiringPassphrase() + "\n"
 
             "\nArguments:\n"
-            "1. \"pivxaddress\"  (string, required) The pivx address to send to.\n"
-            "2. \"amount\"      (numeric, required) The amount in PIV to send. eg 0.1\n"
+            "1. \"nebulaprojectaddress\"  (string, required) The nebulaproject address to send to.\n"
+            "2. \"amount\"      (numeric, required) The amount in NBLA to send. eg 0.1\n"
             "3. \"comment\"     (string, optional) A comment used to store what the transaction is for. \n"
             "                             This is not part of the transaction, just kept in your wallet.\n"
             "4. \"comment-to\"  (string, optional) A comment to store the name of the person or organization \n"
@@ -1042,7 +1042,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
     const std::string addrStr = request.params[0].get_str();
     const CWDestination& destination = Standard::DecodeDestination(addrStr, isStaking, isShielded);
     if (!Standard::IsValidDestination(destination) || isStaking)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT address");
     const std::string commentStr = (request.params.size() > 2 && !request.params[2].isNull()) ?
                                    request.params[2].get_str() : "";
     const std::string toStr = (request.params.size() > 3 && !request.params[3].isNull()) ?
@@ -1093,7 +1093,7 @@ UniValue CreateColdStakeDelegation(const UniValue& params, CTransactionRef& txNe
     bool isStaking = false;
     CTxDestination stakeAddr = DecodeDestination(params[0].get_str(), isStaking);
     if (!IsValidDestination(stakeAddr) || !isStaking)
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX staking address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT staking address");
 
     CKeyID* stakeKey = boost::get<CKeyID>(&stakeAddr);
     if (!stakeKey)
@@ -1126,7 +1126,7 @@ UniValue CreateColdStakeDelegation(const UniValue& params, CTransactionRef& txNe
         bool isStaking = false;
         CTxDestination dest = DecodeDestination(params[2].get_str(), isStaking);
         if (!IsValidDestination(dest) || isStaking)
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX spending address");
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT spending address");
         ownerKey = *boost::get<CKeyID>(&dest);
         // Check that the owner address belongs to this wallet, or fForceExternalAddr is true
         bool fForceExternalAddr = params.size() > 3 && !params[3].isNull() ? params[3].get_bool() : false;
@@ -1192,9 +1192,9 @@ UniValue delegatestake(const JSONRPCRequest& request)
             HelpRequiringPassphrase() + "\n"
 
             "\nArguments:\n"
-            "1. \"stakingaddress\"      (string, required) The pivx staking address to delegate.\n"
-            "2. \"amount\"              (numeric, required) The amount in PIV to delegate for staking. eg 100\n"
-            "3. \"owneraddress\"        (string, optional) The pivx address corresponding to the key that will be able to spend the stake.\n"
+            "1. \"stakingaddress\"      (string, required) The nebulaproject staking address to delegate.\n"
+            "2. \"amount\"              (numeric, required) The amount in NBLA to delegate for staking. eg 100\n"
+            "3. \"owneraddress\"        (string, optional) The nebulaproject address corresponding to the key that will be able to spend the stake.\n"
             "                               If not provided, or empty string, a new wallet address is generated.\n"
             "4. \"fExternalOwner\"      (boolean, optional, default = false) use the provided 'owneraddress' anyway, even if not present in this wallet.\n"
             "                               WARNING: The owner of the keys to 'owneraddress' will be the only one allowed to spend these coins.\n"
@@ -1242,9 +1242,9 @@ UniValue rawdelegatestake(const JSONRPCRequest& request)
             HelpRequiringPassphrase() + "\n"
 
             "\nArguments:\n"
-            "1. \"stakingaddress\"      (string, required) The pivx staking address to delegate.\n"
-            "2. \"amount\"              (numeric, required) The amount in PIV to delegate for staking. eg 100\n"
-            "3. \"owneraddress\"        (string, optional) The pivx address corresponding to the key that will be able to spend the stake.\n"
+            "1. \"stakingaddress\"      (string, required) The nebulaproject staking address to delegate.\n"
+            "2. \"amount\"              (numeric, required) The amount in NBLA to delegate for staking. eg 100\n"
+            "3. \"owneraddress\"        (string, optional) The nebulaproject address corresponding to the key that will be able to spend the stake.\n"
             "                               If not provided, or empty string, a new wallet address is generated.\n"
             "4. \"fExternalOwner\"      (boolean, optional, default = false) use the provided 'owneraddress' anyway, even if not present in this wallet.\n"
             "                               WARNING: The owner of the keys to 'owneraddress' will be the only one allowed to spend these coins.\n"
@@ -1358,7 +1358,7 @@ UniValue viewshieldtransaction(const JSONRPCRequest& request)
                 "      \"spend\" : n,                    (numeric, sapling) the index of the spend within vShieldedSpend\n"
                 "      \"txidPrev\" : \"transactionid\",   (string) The id for the transaction this note was created in\n"
                 "      \"outputPrev\" : n,               (numeric, sapling) the index of the output within the vShieldedOutput\n"
-                "      \"address\" : \"pivxaddress\",     (string) The PIVX address involved in the transaction\n"
+                "      \"address\" : \"nebulaprojectaddress\",     (string) The NEBULAPROJECT address involved in the transaction\n"
                 "      \"value\" : x.xxx                 (numeric) The amount in " + CURRENCY_UNIT + "\n"
                 "      \"valueSat\" : xxxx               (numeric) The amount in satoshis\n"
                 "    }\n"
@@ -1367,7 +1367,7 @@ UniValue viewshieldtransaction(const JSONRPCRequest& request)
                 "  \"outputs\" : [\n"
                 "    {\n"
                 "      \"output\" : n,                   (numeric, sapling) the index of the output within the vShieldedOutput\n"
-                "      \"address\" : \"pivxaddress\",     (string) The PIVX address involved in the transaction\n"
+                "      \"address\" : \"nebulaprojectaddress\",     (string) The NEBULAPROJECT address involved in the transaction\n"
                 "      \"outgoing\" : true|false         (boolean, sapling) True if the output is not for an address in the wallet\n"
                 "      \"value\" : x.xxx                 (numeric) The amount in " + CURRENCY_UNIT + "\n"
                 "      \"valueSat\" : xxxx               (numeric) The amount in satoshis\n"
@@ -1689,7 +1689,7 @@ UniValue shieldsendmany(const JSONRPCRequest& request)
                 "2. \"amounts\"             (array, required) An array of json objects representing the amounts to send.\n"
                 "    [{\n"
                 "      \"address\":address  (string, required) The address is a transparent addr or shield addr\n"
-                "      \"amount\":amount    (numeric, required) The numeric amount in " + "PIV" + " is the value\n"
+                "      \"amount\":amount    (numeric, required) The numeric amount in " + "NBLA" + " is the value\n"
                 "      \"memo\":memo        (string, optional) If the address is a shield addr, message string of max 512 bytes\n"
                 "    }, ... ]\n"
                 "3. minconf               (numeric, optional, default=1) Only use funds confirmed at least this many times.\n"
@@ -1736,7 +1736,7 @@ UniValue rawshieldsendmany(const JSONRPCRequest& request)
                 "2. \"amounts\"             (array, required) An array of json objects representing the amounts to send.\n"
                 "    [{\n"
                 "      \"address\":address  (string, required) The address is a transparent addr or shield addr\n"
-                "      \"amount\":amount    (numeric, required) The numeric amount in " + "PIV" + " is the value\n"
+                "      \"amount\":amount    (numeric, required) The numeric amount in " + "NBLA" + " is the value\n"
                 "      \"memo\":memo        (string, optional) If the address is a shield addr, message string of max 512 bytes\n"
                 "    }, ... ]\n"
                 "3. minconf               (numeric, optional, default=1) Only use funds confirmed at least this many times.\n"
@@ -1774,8 +1774,8 @@ UniValue listaddressgroupings(const JSONRPCRequest& request)
             "[\n"
             "  [\n"
             "    [\n"
-            "      \"pivxaddress\",     (string) The pivx address\n"
-            "      amount,                 (numeric) The amount in PIV\n"
+            "      \"nebulaprojectaddress\",     (string) The nebulaproject address\n"
+            "      amount,                 (numeric) The amount in NBLA\n"
             "      \"label\"             (string, optional) The label\n"
             "    ]\n"
             "    ,...\n"
@@ -1815,12 +1815,12 @@ UniValue signmessage(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 2)
         throw std::runtime_error(
-            "signmessage \"pivxaddress\" \"message\"\n"
+            "signmessage \"nebulaprojectaddress\" \"message\"\n"
             "\nSign a message with the private key of an address" +
             HelpRequiringPassphrase() + "\n"
 
             "\nArguments:\n"
-            "1. \"pivxaddress\"  (string, required) The pivx address to use for the private key.\n"
+            "1. \"nebulaprojectaddress\"  (string, required) The nebulaproject address to use for the private key.\n"
             "2. \"message\"         (string, required) The message to create a signature of.\n"
 
             "\nResult:\n"
@@ -1870,15 +1870,15 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-            "getreceivedbyaddress \"pivxaddress\" ( minconf )\n"
-            "\nReturns the total amount received by the given pivxaddress in transactions with at least minconf confirmations.\n"
+            "getreceivedbyaddress \"nebulaprojectaddress\" ( minconf )\n"
+            "\nReturns the total amount received by the given nebulaprojectaddress in transactions with at least minconf confirmations.\n"
 
             "\nArguments:\n"
-            "1. \"pivxaddress\"  (string, required) The pivx address for transactions.\n"
+            "1. \"nebulaprojectaddress\"  (string, required) The nebulaproject address for transactions.\n"
             "2. minconf             (numeric, optional, default=1) Only include transactions confirmed at least this many times.\n"
 
             "\nResult:\n"
-            "amount   (numeric) The total amount in PIV received at this address.\n"
+            "amount   (numeric) The total amount in NBLA received at this address.\n"
 
             "\nExamples:\n"
             "\nThe amount from transactions with at least 1 confirmation\n" +
@@ -1897,10 +1897,10 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
     LOCK2(cs_main, pwalletMain->cs_wallet);
     int nBlockHeight = chainActive.Height();
 
-    // pivx address
+    // nebulaproject address
     CTxDestination address = DecodeDestination(request.params[0].get_str());
     if (!IsValidDestination(address))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIVX address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NEBULAPROJECT address");
     CScript scriptPubKey = GetScriptForDestination(address);
     if (!IsMine(*pwalletMain, scriptPubKey))
         throw JSONRPCError(RPC_WALLET_ERROR, "Address not found in wallet");
@@ -1939,7 +1939,7 @@ UniValue getreceivedbylabel(const JSONRPCRequest& request)
             "2. minconf          (numeric, optional, default=1) Only include transactions confirmed at least this many times.\n"
 
             "\nResult:\n"
-            "amount              (numeric) The total amount in PIV received for this label.\n"
+            "amount              (numeric) The total amount in NBLA received for this label.\n"
 
             "\nExamples:\n"
             "\nAmount received by the default label with at least 1 confirmation\n" +
@@ -2001,7 +2001,7 @@ UniValue getbalance(const JSONRPCRequest& request)
             "4. includeShield    (bool, optional, default=true) Also include shield balance\n"
 
             "\nResult:\n"
-            "amount              (numeric) The total amount in PIV received for this wallet.\n"
+            "amount              (numeric) The total amount in NBLA received for this wallet.\n"
 
             "\nExamples:\n"
             "\nThe total amount in the wallet\n" +
@@ -2038,7 +2038,7 @@ UniValue getcoldstakingbalance(const JSONRPCRequest& request)
             "\nReturns the server's total available cold balance.\n"
 
             "\nResult:\n"
-            "amount              (numeric) The total amount in PIV received for this wallet in P2CS contracts.\n"
+            "amount              (numeric) The total amount in NBLA received for this wallet in P2CS contracts.\n"
 
             "\nExamples:\n"
             "\nThe total amount in the wallet\n" +
@@ -2064,7 +2064,7 @@ UniValue getdelegatedbalance(const JSONRPCRequest& request)
             "to a cold staking address to stake on behalf of addresses of this wallet).\n"
 
             "\nResult:\n"
-            "amount              (numeric) The total amount in PIV received for this wallet in P2CS contracts.\n"
+            "amount              (numeric) The total amount in NBLA received for this wallet in P2CS contracts.\n"
 
             "\nExamples:\n"
             "\nThe total amount in the wallet\n" +
@@ -2119,7 +2119,7 @@ static UniValue legacy_sendmany(const UniValue& sendTo, int nMinDepth, std::stri
         bool isStaking = false;
         CTxDestination dest = DecodeDestination(name_,isStaking);
         if (!IsValidDestination(dest) || isStaking)
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid PIVX address: ")+name_);
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid NEBULAPROJECT address: ")+name_);
 
         if (setAddress.count(dest))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ")+name_);
@@ -2179,7 +2179,7 @@ UniValue sendmany(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 2 || request.params.size() > 5)
         throw std::runtime_error(
             "sendmany \"\" {\"address\":amount,...} ( minconf \"comment\" includeDelegated )\n"
-            "\nSend to multiple destinations. Recipients are transparent or shield PIVX addresses.\n"
+            "\nSend to multiple destinations. Recipients are transparent or shield NEBULAPROJECT addresses.\n"
             "\nAmounts are double-precision floating point numbers.\n"
             + HelpRequiringPassphrase() + "\n"
 
@@ -2187,8 +2187,8 @@ UniValue sendmany(const JSONRPCRequest& request)
             "1. \"dummy\"               (string, required) Must be set to \"\" for backwards compatibility.\n"
             "2. \"amounts\"             (string, required) A json object with addresses and amounts\n"
             "    {\n"
-            "      \"address\":amount   (numeric) The pivx address (either transparent or shield) is the key,\n"
-            "                                     the numeric amount in PIV is the value\n"
+            "      \"address\":amount   (numeric) The nebulaproject address (either transparent or shield) is the key,\n"
+            "                                     the numeric amount in NBLA is the value\n"
             "      ,...\n"
             "    }\n"
             "3. minconf                 (numeric, optional, default=1) Only use the balance confirmed at least this many times.\n"
@@ -2254,20 +2254,20 @@ UniValue addmultisigaddress(const JSONRPCRequest& request)
         throw std::runtime_error(
             "addmultisigaddress nrequired [\"key\",...] ( \"label\" )\n"
             "\nAdd a nrequired-to-sign multisignature address to the wallet.\n"
-            "Each key is a PIVX address or hex-encoded public key.\n"
+            "Each key is a NEBULAPROJECT address or hex-encoded public key.\n"
             "If 'label' is specified, assign address to that label.\n"
 
             "\nArguments:\n"
             "1. nrequired        (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-            "2. \"keysobject\"   (string, required) A json array of pivx addresses or hex-encoded public keys\n"
+            "2. \"keysobject\"   (string, required) A json array of nebulaproject addresses or hex-encoded public keys\n"
             "     [\n"
-            "       \"address\"  (string) pivx address or hex-encoded public key\n"
+            "       \"address\"  (string) nebulaproject address or hex-encoded public key\n"
             "       ...,\n"
             "     ]\n"
             "3. \"label\"      (string, optional) A label to assign the addresses to.\n"
 
             "\nResult:\n"
-            "\"pivxaddress\"  (string) A pivx address associated with the keys.\n"
+            "\"nebulaprojectaddress\"  (string) A nebulaproject address associated with the keys.\n"
 
             "\nExamples:\n"
             "\nAdd a multisig address from 2 addresses\n" +
@@ -2460,7 +2460,7 @@ UniValue listreceivedbyaddress(const JSONRPCRequest& request)
             "  {\n"
             "    \"involvesWatchonly\" : \"true\",    (bool) Only returned if imported addresses were involved in transaction\n"
             "    \"address\" : \"receivingaddress\",  (string) The receiving address\n"
-            "    \"amount\" : x.xxx,                  (numeric) The total amount in PIV received by the address\n"
+            "    \"amount\" : x.xxx,                  (numeric) The total amount in NBLA received by the address\n"
             "    \"confirmations\" : n                (numeric) The number of confirmations of the most recent transaction included\n"
             "    \"bcconfirmations\" : n,             (numeric) DEPRECATED: Will be removed in a future release\n"
             "    \"label\" : \"label\",               (string) The label of the receiving address. The default label is \"\".\n"
@@ -2782,12 +2782,12 @@ UniValue listtransactions(const JSONRPCRequest& request)
             "\nResult:\n"
             "[\n"
             "  {\n"
-            "    \"address\":\"pivxaddress\",    (string) The pivx address of the transaction.\n"
+            "    \"address\":\"nebulaprojectaddress\",    (string) The nebulaproject address of the transaction.\n"
             "    \"category\":\"category\",      (string) The transaction category (send|receive|orphan|immature|generate).\n"
-            "    \"amount\": x.xxx,          (numeric) The amount in PIV. This is negative for the 'send' category, and positive\n"
+            "    \"amount\": x.xxx,          (numeric) The amount in NBLA. This is negative for the 'send' category, and positive\n"
             "                                         for the 'receive' category,\n"
             "    \"vout\" : n,               (numeric) the vout value\n"
-            "    \"fee\": x.xxx,             (numeric) The amount of the fee in PIV. This is negative and only available for the \n"
+            "    \"fee\": x.xxx,             (numeric) The amount of the fee in NBLA. This is negative and only available for the \n"
             "                                         'send' category of transactions.\n"
             "    \"confirmations\": n,     (numeric) The number of blockchain confirmations for the transaction. Available for 'send'\n"
             "                                         'receive' category of transactions. Negative confirmations indicate the\n"
@@ -2895,12 +2895,12 @@ UniValue listsinceblock(const JSONRPCRequest& request)
             "\nResult:\n"
             "{\n"
             "  \"transactions\": [\n"
-            "    \"address\":\"pivxaddress\",    (string) The pivx address of the transaction. Not present for move transactions (category = move).\n"
+            "    \"address\":\"nebulaprojectaddress\",    (string) The nebulaproject address of the transaction. Not present for move transactions (category = move).\n"
             "    \"category\":\"send|receive\",     (string) The transaction category. 'send' has negative amounts, 'receive' has positive amounts.\n"
-            "    \"amount\": x.xxx,          (numeric) The amount in PIV. This is negative for the 'send' category, and for the 'move' category for moves \n"
+            "    \"amount\": x.xxx,          (numeric) The amount in NBLA. This is negative for the 'send' category, and for the 'move' category for moves \n"
             "                                          outbound. It is positive for the 'receive' category, and for the 'move' category for inbound funds.\n"
             "    \"vout\" : n,               (numeric) the vout value\n"
-            "    \"fee\": x.xxx,             (numeric) The amount of the fee in PIV. This is negative and only available for the 'send' category of transactions.\n"
+            "    \"fee\": x.xxx,             (numeric) The amount of the fee in NBLA. This is negative and only available for the 'send' category of transactions.\n"
             "    \"confirmations\": n,       (numeric) The number of confirmations for the transaction. Available for 'send' and 'receive' category of transactions.\n"
             "    \"bcconfirmations\" : n,             (numeric) DEPRECATED: Will be removed in a future release\n"
             "    \"blockhash\": \"hashvalue\",     (string) The block hash containing the transaction. Available for 'send' and 'receive' category of transactions.\n"
@@ -2985,7 +2985,7 @@ UniValue gettransaction(const JSONRPCRequest& request)
 
             "\nResult:\n"
             "{\n"
-            "  \"amount\" : x.xxx,        (numeric) The transaction amount in PIV\n"
+            "  \"amount\" : x.xxx,        (numeric) The transaction amount in NBLA\n"
             "  \"confirmations\" : n,     (numeric) The number of confirmations\n"
             "  \"bcconfirmations\" : n,             (numeric) DEPRECATED: Will be removed in a future release\n"
             "  \"blockhash\" : \"hash\",  (string) The block hash\n"
@@ -2996,9 +2996,9 @@ UniValue gettransaction(const JSONRPCRequest& request)
             "  \"timereceived\" : ttt,    (numeric) The time received in seconds since epoch (1 Jan 1970 GMT)\n"
             "  \"details\" : [\n"
             "    {\n"
-            "      \"address\" : \"pivxaddress\",   (string) The pivx address involved in the transaction\n"
+            "      \"address\" : \"nebulaprojectaddress\",   (string) The nebulaproject address involved in the transaction\n"
             "      \"category\" : \"send|receive\",    (string) The category, either 'send' or 'receive'\n"
-            "      \"amount\" : x.xxx                  (numeric) The amount in PIV\n"
+            "      \"amount\" : x.xxx                  (numeric) The amount in NBLA\n"
             "      \"label\" : \"label\",              (string) A comment for the address/transaction, if any\n"
             "      \"vout\" : n,                       (numeric) the vout value\n"
             "    }\n"
@@ -3168,7 +3168,7 @@ UniValue walletpassphrase(const JSONRPCRequest& request)
         throw std::runtime_error(
             "walletpassphrase \"passphrase\" timeout ( stakingonly )\n"
             "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
-            "This is needed prior to performing transactions related to private keys such as sending PIVs\n"
+            "This is needed prior to performing transactions related to private keys such as sending NBLAs\n"
 
             "\nArguments:\n"
             "1. \"passphrase\"     (string, required) The wallet passphrase\n"
@@ -3337,10 +3337,10 @@ UniValue encryptwallet(const JSONRPCRequest& request)
             "\nExamples:\n"
             "\nEncrypt you wallet\n" +
             HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
-            "\nNow set the passphrase to use the wallet, such as for signing or sending PIVs\n" +
+            "\nNow set the passphrase to use the wallet, such as for signing or sending NBLAs\n" +
             HelpExampleCli("walletpassphrase", "\"my pass phrase\"") +
             "\nNow we can so something like sign\n" +
-            HelpExampleCli("signmessage", "\"pivxaddress\" \"test message\"") +
+            HelpExampleCli("signmessage", "\"nebulaprojectaddress\" \"test message\"") +
             "\nNow lock the wallet again by removing the passphrase\n" +
             HelpExampleCli("walletlock", "") +
             "\nAs a json rpc call\n" +
@@ -3371,7 +3371,7 @@ UniValue encryptwallet(const JSONRPCRequest& request)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; pivx server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
+    return "wallet encrypted; nebulaproject server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
 }
 
 UniValue listunspent(const JSONRPCRequest& request)
@@ -3388,9 +3388,9 @@ UniValue listunspent(const JSONRPCRequest& request)
                 "\nArguments:\n"
                 "1. minconf          (numeric, optional, default=1) The minimum confirmations to filter\n"
                 "2. maxconf          (numeric, optional, default=9999999) The maximum confirmations to filter\n"
-                "3. \"addresses\"    (string) A json array of pivx addresses to filter\n"
+                "3. \"addresses\"    (string) A json array of nebulaproject addresses to filter\n"
                 "    [\n"
-                "      \"address\"   (string) pivx address\n"
+                "      \"address\"   (string) nebulaproject address\n"
                 "      ,...\n"
                 "    ]\n"
                 "4. watchonlyconfig  (numeric, optional, default=1) 1 = list regular unspent transactions,  2 = list all unspent transactions (including watchonly)\n"
@@ -3401,11 +3401,11 @@ UniValue listunspent(const JSONRPCRequest& request)
                 "    \"txid\" : \"txid\",        (string) the transaction id\n"
                 "    \"generated\" : true|false  (boolean) true if txout is a coinstake transaction output\n"
                 "    \"vout\" : n,               (numeric) the vout value\n"
-                "    \"address\" : \"address\",  (string) the pivx address\n"
+                "    \"address\" : \"address\",  (string) the nebulaproject address\n"
                 "    \"label\" : \"label\",      (string) The associated label, or \"\" for the default label\n"
                 "    \"scriptPubKey\" : \"key\", (string) the script key\n"
                 "    \"redeemScript\" : \"key\", (string) the redeemscript key\n"
-                "    \"amount\" : x.xxx,         (numeric) the transaction amount in PIV\n"
+                "    \"amount\" : x.xxx,         (numeric) the transaction amount in NBLA\n"
                 "    \"confirmations\" : n,      (numeric) The number of confirmations\n"
                 "    \"spendable\" : true|false  (boolean) Whether we have the private keys to spend this output\n"
                 "    \"solvable\" : xxx          (bool) Whether we know how to spend this output, ignoring the lack of keys\n"
@@ -3437,7 +3437,7 @@ UniValue listunspent(const JSONRPCRequest& request)
             const UniValue& input = inputs[inx];
             CTxDestination dest = DecodeDestination(input.get_str());
             if (!IsValidDestination(dest))
-                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid PIVX address: ") + input.get_str());
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid NEBULAPROJECT address: ") + input.get_str());
             if (destinations.count(dest))
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + input.get_str());
             destinations.insert(dest);
@@ -3514,7 +3514,7 @@ UniValue lockunspent(const JSONRPCRequest& request)
             "lockunspent unlock [{\"txid\":\"txid\",\"vout\":n},...]\n"
             "\nUpdates list of temporarily unspendable outputs.\n"
             "Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs.\n"
-            "A locked transaction output will not be chosen by automatic coin selection, when spending PIVs.\n"
+            "A locked transaction output will not be chosen by automatic coin selection, when spending NBLAs.\n"
             "Locks are stored in memory only. Nodes start with zero locked outputs, and the locked output list\n"
             "is always cleared (by virtue of process exit) when a node stops or fails.\n"
             "Also see the listunspent call\n"
@@ -3684,7 +3684,7 @@ UniValue settxfee(const JSONRPCRequest& request)
             "\nSet the transaction fee per kB.\n"
 
             "\nArguments:\n"
-            "1. amount         (numeric, required) The transaction fee in PIV/kB rounded to the nearest 0.00000001\n"
+            "1. amount         (numeric, required) The transaction fee in NBLA/kB rounded to the nearest 0.00000001\n"
 
             "\nResult\n"
             "true|false        (boolean) Returns true if successful\n"
@@ -3712,20 +3712,20 @@ UniValue getwalletinfo(const JSONRPCRequest& request)
             "\nResult:\n"
             "{\n"
             "  \"walletversion\": xxxxx,                  (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,                      (numeric) the total PIV balance of the wallet (cold balance excluded)\n"
-            "  \"delegated_balance\": xxxxx,              (numeric) the PIV balance held in P2CS (cold staking) contracts\n"
-            "  \"cold_staking_balance\": xx,              (numeric) the PIV balance held in cold staking addresses\n"
-            "  \"unconfirmed_balance\": xxx,              (numeric) the total unconfirmed balance of the wallet in PIV\n"
-            "  \"immature_delegated_balance\": xxxxxx,    (numeric) the delegated immature balance of the wallet in PIV\n"
-            "  \"immature_cold_staking_balance\": xxxxxx, (numeric) the cold-staking immature balance of the wallet in PIV\n"
-            "  \"immature_balance\": xxxxxx,              (numeric) the total immature balance of the wallet in PIV\n"
+            "  \"balance\": xxxxxxx,                      (numeric) the total NBLA balance of the wallet (cold balance excluded)\n"
+            "  \"delegated_balance\": xxxxx,              (numeric) the NBLA balance held in P2CS (cold staking) contracts\n"
+            "  \"cold_staking_balance\": xx,              (numeric) the NBLA balance held in cold staking addresses\n"
+            "  \"unconfirmed_balance\": xxx,              (numeric) the total unconfirmed balance of the wallet in NBLA\n"
+            "  \"immature_delegated_balance\": xxxxxx,    (numeric) the delegated immature balance of the wallet in NBLA\n"
+            "  \"immature_cold_staking_balance\": xxxxxx, (numeric) the cold-staking immature balance of the wallet in NBLA\n"
+            "  \"immature_balance\": xxxxxx,              (numeric) the total immature balance of the wallet in NBLA\n"
             "  \"txcount\": xxxxxxx,                      (numeric) the total number of transactions in the wallet\n"
             "  \"keypoololdest\": xxxxxx,                 (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool\n"
             "  \"keypoolsize\": xxxx,                     (numeric) how many new keys are pre-generated (only counts external keys)\n"
             "  \"keypoolsize_hd_internal\": xxxx,         (numeric) how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is using this feature, otherwise external keys are used)\n"
             "  \"keypoolsize_hd_staking\": xxxx,          (numeric) how many new keys are pre-generated for staking use (used for staking contracts, only appears if the wallet is using this feature)\n"
             "  \"unlocked_until\": ttt,                   (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked\n"
-            "  \"paytxfee\": x.xxxx                       (numeric) the transaction fee configuration, set in PIV/kB\n"
+            "  \"paytxfee\": x.xxxx                       (numeric) the transaction fee configuration, set in NBLA/kB\n"
             "  \"hdseedid\": \"<hash160>\"                (string, optional) the Hash160 of the HD seed (only present when HD is enabled)\n"
             "  \"last_processed_block\": xxxxx,          (numeric) the last block processed block height\n"
             "}\n"
@@ -3783,13 +3783,13 @@ UniValue getstakingstatus(const JSONRPCRequest& request)
             "\nResult:\n"
             "{\n"
             "  \"staking_status\": true|false,      (boolean) whether the wallet is staking or not\n"
-            "  \"staking_enabled\": true|false,     (boolean) whether staking is enabled/disabled in pivx.conf\n"
-            "  \"coldstaking_enabled\": true|false, (boolean) whether cold-staking is enabled/disabled in pivx.conf\n"
+            "  \"staking_enabled\": true|false,     (boolean) whether staking is enabled/disabled in nebulaproject.conf\n"
+            "  \"coldstaking_enabled\": true|false, (boolean) whether cold-staking is enabled/disabled in nebulaproject.conf\n"
             "  \"haveconnections\": true|false,     (boolean) whether network connections are present\n"
             "  \"mnsync\": true|false,              (boolean) whether the required masternode/spork data is synced\n"
             "  \"walletunlocked\": true|false,      (boolean) whether the wallet is unlocked\n"
             "  \"stakeablecoins\": n                (numeric) number of stakeable UTXOs\n"
-            "  \"stakingbalance\": d                (numeric) PIV value of the stakeable coins (minus reserve balance, if any)\n"
+            "  \"stakingbalance\": d                (numeric) NBLA value of the stakeable coins (minus reserve balance, if any)\n"
             "  \"stakesplitthreshold\": d           (numeric) value of the current threshold for stake split\n"
             "  \"lastattempt_age\": n               (numeric) seconds since last stake attempt\n"
             "  \"lastattempt_depth\": n             (numeric) depth of the block on top of which the last stake attempt was made\n"
@@ -3840,11 +3840,11 @@ UniValue setstakesplitthreshold(const JSONRPCRequest& request)
             "Whenever a successful stake is found, the stake amount is split across as many outputs (each with a value\n"
             "higher than the threshold) as possible.\n"
             "E.g. If the coinstake input + the block reward is 2000, and the split threshold is 499, the corresponding\n"
-            "coinstake transaction will have 4 outputs (of 500 PIV each)."
+            "coinstake transaction will have 4 outputs (of 500 NBLA each)."
             + HelpRequiringPassphrase() + "\n"
 
             "\nArguments:\n"
-            "1. value                   (numeric, required) Threshold value (in PIV).\n"
+            "1. value                   (numeric, required) Threshold value (in NBLA).\n"
             "                                     Set to 0 to disable stake-splitting\n"
             "                                     If > 0, it must be >= " + FormatMoney(CWallet::minStakeSplitThreshold) + "\n"
 
@@ -3904,7 +3904,7 @@ UniValue autocombinerewards(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 1 || (fEnable && request.params.size() != 2) || request.params.size() > 2)
         throw std::runtime_error(
             "autocombinerewards enable ( threshold )\n"
-            "\nWallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same PIVX address\n"
+            "\nWallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same NEBULAPROJECT address\n"
             "When autocombinerewards runs it will create a transaction, and therefore will be subject to transaction fees.\n"
 
             "\nArguments:\n"
@@ -4109,7 +4109,7 @@ UniValue multisend(const JSONRPCRequest& request)
     std::string strAddress = request.params[0].get_str();
     CBitcoinAddress address(strAddress);
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid PIV address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid NBLA address");
     if (std::stoi(request.params[1].get_str().c_str()) < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid percentage");
     if (pwalletMain->IsLocked())

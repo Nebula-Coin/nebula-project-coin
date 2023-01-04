@@ -7,10 +7,10 @@ BUILDDIR=${BUILDDIR:-$TOPDIR}
 BINDIR=${BINDIR:-$BUILDDIR/src}
 MANDIR=${MANDIR:-$TOPDIR/doc/man}
 
-BITCOIND=${BITCOIND:-$BINDIR/pivxd}
-BITCOINCLI=${BITCOINCLI:-$BINDIR/pivx-cli}
-BITCOINTX=${BITCOINTX:-$BINDIR/pivx-tx}
-BITCOINQT=${BITCOINQT:-$BINDIR/qt/pivx-qt}
+BITCOIND=${BITCOIND:-$BINDIR/nebulaprojectd}
+BITCOINCLI=${BITCOINCLI:-$BINDIR/nebulaproject-cli}
+BITCOINTX=${BITCOINTX:-$BINDIR/nebulaproject-tx}
+BITCOINQT=${BITCOINQT:-$BINDIR/qt/nebulaproject-qt}
 
 [ ! -x $BITCOIND ] && echo "$BITCOIND not found or not executable." && exit 1
 

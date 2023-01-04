@@ -13,9 +13,9 @@ if [ -n "${1:-}" ]; then
     PARAMS_DIR="$1"
 else
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        PARAMS_DIR="$HOME/Library/Application Support/PIVXParams"
+        PARAMS_DIR="$HOME/Library/Application Support/NEBULAPROJECTParams"
     else
-        PARAMS_DIR="$HOME/.pivx-params"
+        PARAMS_DIR="$HOME/.nebulaproject-params"
     fi
 fi
 
@@ -96,7 +96,7 @@ EOF
 function fetch_failure {
     cat >&2 <<EOF
 
-Failed to fetch the PIVX zkSNARK parameters!
+Failed to fetch the NEBULAPROJECT zkSNARK parameters!
 Try installing one of the following programs and make sure you're online:
 
  * ipfs
@@ -181,9 +181,9 @@ function main() {
     || exit_locked_error
 
     cat <<EOF
-PIVX - fetch-params.sh
+NEBULAPROJECT - fetch-params.sh
 
-This script will fetch the PIVX zkSNARK parameters and verify their
+This script will fetch the NEBULAPROJECT zkSNARK parameters and verify their
 integrity with sha256sum.
 
 If they already exist locally, it will exit now and do nothing else.
@@ -195,7 +195,7 @@ EOF
         mkdir -p "$PARAMS_DIR"
         README_PATH="$PARAMS_DIR/README"
         cat >> "$README_PATH" <<EOF
-This directory stores common PIVX zkSNARK parameters. Note that it is
+This directory stores common NEBULAPROJECT zkSNARK parameters. Note that it is
 distinct from the daemon's -datadir argument because the parameters are
 large and may be shared across multiple distinct -datadir's such as when
 setting up test networks.
