@@ -43,18 +43,19 @@ public:
     /** Return whether the entry is still empty and unedited */
     bool isClear();
     void setOnlyStakingAddressAccepted(bool onlyStakingAddress);
-    CAmount getAmountValue(QString str);
 
     void setAddress(const QString& address);
     void setLabel(const QString& label);
     void setAmount(const QString& amount);
     void setAddressAndLabelOrDescription(const QString& address, const QString& message);
     void setFocus();
+    void toggleSubtractFeeFromAmount();
 
     QRect getEditLineRect();
     int getEditHeight();
     int getEditWidth();
     int getMenuBtnWidth();
+    bool getSubtractFeeFromAmount() const;
 
     // Return true if memo was set and false if it was cleared.
     bool launchMemoDialog();

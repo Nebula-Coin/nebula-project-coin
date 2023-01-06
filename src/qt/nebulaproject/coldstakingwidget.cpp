@@ -168,6 +168,10 @@ ColdStakingWidget::ColdStakingWidget(NEBULAPROJECTGUI* parent) :
     ui->btnMyStakingAddresses->setChecked(true);
     ui->listViewStakingAddress->setVisible(false);
 
+    // My ColdStaking Addresses search filter
+    initCssEditLine(ui->lineEditFilter, true);
+    ui->lineEditFilter->setStyleSheet("font: 14px;");
+
     ui->btnMyStakingAddresses->setTitleClassAndText("btn-title-grey", tr("My Cold Staking Addresses"));
     ui->btnMyStakingAddresses->setSubTitleClassAndText("text-subtitle", tr("List your own cold staking addresses."));
     ui->btnMyStakingAddresses->layout()->setMargin(0);
@@ -197,6 +201,7 @@ ColdStakingWidget::ColdStakingWidget(NEBULAPROJECTGUI* parent) :
     connect(ui->listView, &QListView::clicked, this, &ColdStakingWidget::handleAddressClicked);
     connect(ui->listViewStakingAddress, &QListView::clicked, this, &ColdStakingWidget::handleMyColdAddressClicked);
     connect(ui->btnMyStakingAddresses, &OptionButton::clicked, this, &ColdStakingWidget::onMyStakingAddressesClicked);
+    connect(ui->lineEditFilter, &QLineEdit::textChanged, this, &ColdStakingWidget::filterChanged);
 
     coinControlDialog = new CoinControlDialog(nullptr, true);
 }
@@ -228,7 +233,7 @@ void ColdStakingWidget::loadWalletModel()
 
 }
 
-void ColdStakingWidget::onTxArrived(const QString& hash, const bool& isCoinStake, const bool& isCSAnyType)
+void ColdStakingWidget::onTxArrived(const QString& hash, const bool isCoinStake, const bool isMNReward, const bool isCSAnyType)
 {
     if (isCSAnyType) {
         tryRefreshDelegations();
@@ -732,7 +737,7 @@ void ColdStakingWidget::onLabelClicked()
     );
 }
 
-void ColdStakingWidget::onLabelClicked(QString dialogTitle, const QModelIndex &index, const bool& isMyColdStakingAddresses)
+void ColdStakingWidget::onLabelClicked(QString dialogTitle, const QModelIndex &index, const bool isMyColdStakingAddresses)
 {
     if (walletModel && !isShowingDialog) {
         isShowingDialog = true;
@@ -813,6 +818,11 @@ void ColdStakingWidget::onSortOrderChanged(int idx)
 {
     sortOrder = (Qt::SortOrder) ui->comboBoxSortOrder->itemData(idx).toInt();
     sortAddresses();
+}
+
+void ColdStakingWidget::filterChanged(const QString& str)
+{
+    this->addressesFilter->setFilterRegExp(str);
 }
 
 void ColdStakingWidget::sortAddresses()

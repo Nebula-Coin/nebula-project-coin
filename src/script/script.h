@@ -26,6 +26,9 @@ typedef std::vector<unsigned char> valtype;
 
 static const unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520; // bytes
 
+// Maximum number of public keys per multisig
+static const int MAX_PUBKEYS_PER_MULTISIG = 20;
+
 // Maximum script length in bytes
 static const int MAX_SCRIPT_SIZE = 10000;
 
@@ -181,7 +184,8 @@ enum opcodetype
     OP_ZEROCOINPUBLICSPEND = 0xc3,
 
     // cold staking
-    OP_CHECKCOLDSTAKEVERIFY = 0xd1,
+    OP_CHECKCOLDSTAKEVERIFY_LOF = 0xd1,     // last output free for masternode/budget payments
+    OP_CHECKCOLDSTAKEVERIFY = 0xd2,
 
     OP_INVALIDOPCODE = 0xff,
 };
@@ -392,15 +396,11 @@ public:
     CScript(std::vector<unsigned char>::const_iterator pbegin, std::vector<unsigned char>::const_iterator pend) : CScriptBase(pbegin, pend) { }
     CScript(const unsigned char* pbegin, const unsigned char* pend) : CScriptBase(pbegin, pend) { }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(static_cast<CScriptBase&>(*this));
-    }
+    SERIALIZE_METHODS(CScript, obj) { READWRITEAS(CScriptBase, obj); }
 
     CScript& operator+=(const CScript& b)
     {
+        reserve(size() + b.size());
         insert(end(), b.begin(), b.end());
         return *this;
     }
@@ -629,6 +629,7 @@ public:
     bool IsPayToPublicKeyHash() const;
     bool IsPayToScriptHash() const;
     bool IsPayToColdStaking() const;
+    bool IsPayToColdStakingLOF() const;
     bool StartsWithOpcode(const opcodetype opcode) const;
     bool IsZerocoinMint() const;
     bool IsZerocoinSpend() const;
@@ -657,5 +658,6 @@ public:
 
     size_t DynamicMemoryUsage() const;
 };
+
 
 #endif // BITCOIN_SCRIPT_SCRIPT_H

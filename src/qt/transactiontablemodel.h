@@ -30,8 +30,9 @@ class TransactionTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit TransactionTableModel(CWallet* wallet, WalletModel* parent = 0);
-    ~TransactionTableModel();
+    explicit TransactionTableModel(CWallet* wallet, WalletModel* parent = nullptr);
+    ~TransactionTableModel() override;
+    void init();
 
     enum ColumnIndex {
         Status = 0,
@@ -74,17 +75,19 @@ public:
         SizeRole
     };
 
-    int rowCount(const QModelIndex& parent) const;
-    int columnCount(const QModelIndex& parent) const;
+    int rowCount(const QModelIndex& parent) const override;
+    int columnCount(const QModelIndex& parent) const override;
     int size() const;
-    bool hasZcTxes();
-    QVariant data(const QModelIndex& index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-    bool processingQueuedTransactions() { return fProcessingQueuedTransactions; }
+    QVariant data(const QModelIndex& index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    bool processingQueuedTransactions() const { return fProcessingQueuedTransactions; }
 
 Q_SIGNALS:
-    void txArrived(const QString& hash, const bool& isCoinStake, const bool& isCSAnyType);
+    // Emitted only during startup when records gets parsed
+    void txLoaded(const QString& hash, const int txType, const int txStatus);
+    // Emitted when a transaction that belongs to this wallet gets connected to the chain and/or committed locally.
+    void txArrived(const QString& hash, const bool isCoinStake, const bool isMNReward, const bool isCSAnyType);
 
 private:
     // Listeners

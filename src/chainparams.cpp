@@ -69,11 +69,11 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
  *    timestamp before)
  * + Contains no strange transactions
  */
-static Checkpoints::MapCheckpoints mapCheckpoints = {
-	{0, uint256S("0x001")},
+static MapCheckpoints mapCheckpoints = {
+   {0, uint256S("0x001")},
 };
 
-static const Checkpoints::CCheckpointData data = {
+static const CCheckpointData data = {
     &mapCheckpoints,
     1591401645, // * UNIX timestamp of last checkpoint block
     5607713,    // * total number of transactions between genesis and last checkpoint
@@ -81,19 +81,19 @@ static const Checkpoints::CCheckpointData data = {
     3000        // * estimated number of transactions per day after checkpoint
 };
 
-static Checkpoints::MapCheckpoints mapCheckpointsTestnet = {
+static MapCheckpoints mapCheckpointsTestnet = {
     {0, uint256S("0x001")},
     //{    201, uint256S("6ae7d52092fd918c8ac8d9b1334400387d3057997e6e927a88e57186dc395231")},     // v5 activation (PoS/Sapling)
 };
 
-static const Checkpoints::CCheckpointData dataTestnet = {
+static const CCheckpointData dataTestnet = {
     &mapCheckpointsTestnet,
     1454124731,
     0,
     3000};
 
-static Checkpoints::MapCheckpoints mapCheckpointsRegtest = {{0, uint256S("0x001")}};
-static const Checkpoints::CCheckpointData dataRegtest = {
+static MapCheckpoints mapCheckpointsRegtest = {{0, uint256S("0x001")}};
+static const CCheckpointData dataRegtest = {
     &mapCheckpointsRegtest,
     1454124731,
     0,
@@ -108,22 +108,22 @@ public:
 
         genesis = CreateGenesisBlock(1672725004, 1367557, 0x1e0ffff0, 1, 250 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-
         assert(consensus.hashGenesisBlock == uint256S("0x00000784a1da73a185e3e3160c9515007690dd8b560b7aae7e8fdf8ddc0974ab"));
         assert(genesis.hashMerkleRoot == uint256S("0xcd20e2816c1b185a9b6f369d51011b1186ff5b98f6f5bf657cd6039bf289fc29"));
 
-        consensus.fPowAllowMinDifficultyBlocks = true;
-        consensus.powLimit   = ~UINT256_ZERO >> 20;   // NEBULAPROJECT starting difficulty is 1 / 2^12
-        consensus.posLimitV1 = ~UINT256_ZERO >> 24;
-        consensus.posLimitV2 = ~UINT256_ZERO >> 20;
+        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowNoRetargeting = false;
+        consensus.powLimit   = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV1 = uint256S("0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV2 = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nBudgetCycleBlocks = 44640;       // approx. 1 every 30 days
         consensus.nBudgetFeeConfirmations = 6;      // Number of confirmations for the finalization fee
         consensus.nCoinbaseMaturity = 100;
         consensus.nFutureTimeDriftPoW = 7200;
         consensus.nFutureTimeDriftPoS = 180;
-        consensus.nMasternodeCountDrift = 20;       // num of MN we allow the see-saw payments to be off by
         consensus.nMaxMoneyOut = 21000000 * COIN;
-        consensus.nPoolMaxTransactions = 3;
+        consensus.nMNCollateralAmt = 50000 * COIN;
+        consensus.nMNBlockReward = 3 * COIN;
         consensus.nProposalEstablishmentTime = 60 * 60 * 24;    // must be at least a day old to make it into a budget
         consensus.nStakeMinAge = 60 * 60;
         consensus.nStakeMinDepth = 100;
@@ -143,7 +143,6 @@ public:
         consensus.height_last_invalid_UTXO = 999999999;
         consensus.height_last_ZC_AccumCheckpoint = 999999999;
         consensus.height_last_ZC_WrappedSerials = 999999999;
-        consensus.height_ZC_RecalcAccumulators = 999999999;
 
         // validation by-pass
         consensus.nNebulaprojectBadBlockTime = 1471401614;    // Skip nBit validation of Block 259201 per PR #915
@@ -162,6 +161,7 @@ public:
         consensus.ZC_MinMintFee = 1 * CENT;
         consensus.ZC_MinStakeDepth = 200;
         consensus.ZC_TimeStart = 1508214600;        // October 17, 2017 4:30:00 AM
+        consensus.ZC_HeightStart = 863735;
 
         // Network upgrades
         consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
@@ -177,7 +177,10 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V3_4].nActivationHeight          = 3000;
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].nActivationHeight          = 3500;
         consensus.vUpgrades[Consensus::UPGRADE_V5_0].nActivationHeight          = 4000;
-
+        consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 5000;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 6000;
+        consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		/**
         consensus.vUpgrades[Consensus::UPGRADE_ZC].hashActivationBlock =
                 uint256S("0x5b2482eca24caf2a46bb22e0545db7b7037282733faa3a42ec20542509999a64");
@@ -191,7 +194,7 @@ public:
                 uint256S("0x0ef2556e40f3b9f6e02ce611b832e0bbfe7734a8ea751c7b555310ee49b61456");
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].hashActivationBlock =
                 uint256S("0x14e477e597d24549cac5e59d97d32155e6ec2861c1003b42d0566f9bf39b65d5");
-		**/
+        **/
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -204,8 +207,9 @@ public:
         nDefaultPort = 1818;
 
         // Note that of those with the service bits flag, most only support a subset of possible options
-        vSeeds.emplace_back("nebulaproject.io", "seed1.nebulaproject.io", true);     // Primary DNS Seeder from Fuzzbawls
-        vSeeds.emplace_back("nebulaproject.io", "seed2.nebulaproject.io", true);    // Secondary DNS Seeder from Fuzzbawls
+        vSeeds.emplace_back("seed1.nebulaproject.io", true);     // Primary DNS Seeder from Fuzzbawls
+        vSeeds.emplace_back("seed2.nebulaproject.io", true);    // Secondary DNS Seeder from Fuzzbawls
+        vSeeds.emplace_back("nebulaproject-seed.furszy.net", true);     // Primary DNS Seeder from furszy
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 57);
@@ -216,7 +220,10 @@ public:
         // BIP44 coin type is from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
         base58Prefixes[EXT_COIN_TYPE] = {0x80, 0x00, 0x03, 0xa1};
 
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
+
+        // Reject non-standard transactions by default
+        fRequireStandard = true;
 
         // Sapling
         bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "ps";
@@ -226,7 +233,7 @@ public:
         bech32HRPs[SAPLING_EXTENDED_FVK]         = "pxviews";
     }
 
-    const Checkpoints::CCheckpointData& Checkpoints() const
+    const CCheckpointData& Checkpoints() const
     {
         return data;
     }
@@ -245,22 +252,22 @@ public:
 
         genesis = CreateGenesisBlock(1672725009, 107973, 0x1e0ffff0, 1, 250 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-
         assert(consensus.hashGenesisBlock == uint256S("0x000008ed80350453d7443f94ead4f4a513466a22d9e52c25232ff21c4a8942df"));
         assert(genesis.hashMerkleRoot == uint256S("0xcd20e2816c1b185a9b6f369d51011b1186ff5b98f6f5bf657cd6039bf289fc29"));
-		
+
         consensus.fPowAllowMinDifficultyBlocks = true;
-        consensus.powLimit   = ~UINT256_ZERO >> 20;   // NEBULAPROJECT starting difficulty is 1 / 2^12
-        consensus.posLimitV1 = ~UINT256_ZERO >> 24;
-        consensus.posLimitV2 = ~UINT256_ZERO >> 20;
+        consensus.fPowNoRetargeting = false;
+        consensus.powLimit   = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV1 = uint256S("0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV2 = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nBudgetCycleBlocks = 144;         // approx 10 cycles per day
         consensus.nBudgetFeeConfirmations = 3;      // (only 8-blocks window for finalization on testnet)
         consensus.nCoinbaseMaturity = 15;
         consensus.nFutureTimeDriftPoW = 7200;
         consensus.nFutureTimeDriftPoS = 180;
-        consensus.nMasternodeCountDrift = 20;       // num of MN we allow the see-saw payments to be off by
         consensus.nMaxMoneyOut = 21000000 * COIN;
-        consensus.nPoolMaxTransactions = 3;
+        consensus.nMNCollateralAmt = 50000 * COIN;
+        consensus.nMNBlockReward = 3 * COIN;
         consensus.nProposalEstablishmentTime = 60 * 5;  // at least 5 min old to make it into a budget
         consensus.nStakeMinAge = 60 * 60;
         consensus.nStakeMinDepth = 100;
@@ -280,7 +287,7 @@ public:
         consensus.height_last_invalid_UTXO = -1;
         consensus.height_last_ZC_AccumCheckpoint = -1;
         consensus.height_last_ZC_WrappedSerials = -1;
-        consensus.height_ZC_RecalcAccumulators = 999999999;
+        consensus.ZC_HeightStart = 0;
 
         // Zerocoin-related params
         consensus.ZC_Modulus = "25195908475657893494027183240048398571429282126204032027777137836043662020707595556264018525880784"
@@ -310,6 +317,10 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V3_4].nActivationHeight          = 201;
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].nActivationHeight          = 201;
         consensus.vUpgrades[Consensus::UPGRADE_V5_0].nActivationHeight          = 201;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 262525;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 332300;
+        consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -323,8 +334,8 @@ public:
         nDefaultPort = 1918;
 
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("nebulaproject.io", "nebulaproject-testnet.seed.nebulaproject.io", true);
-        vSeeds.emplace_back("nebulaproject.io", "nebulaproject-testnet.seed2.nebulaproject.io", true);
+        vSeeds.emplace_back("nebulaproject-testnet.seed.nebulaproject.io", true);
+        vSeeds.emplace_back("nebulaproject-testnet.seed2.nebulaproject.io", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 66); // Testnet nebulaproject addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 37);  // Testnet nebulaproject script addresses start with '8' or '9'
@@ -337,7 +348,9 @@ public:
         // Testnet nebulaproject BIP44 coin type is '1' (All coin's testnet default)
         base58Prefixes[EXT_COIN_TYPE] = {0x80, 0x00, 0x00, 0x01};
 
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
+        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
+
+        fRequireStandard = false;
 
         // Sapling
         bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "ptestsapling";
@@ -347,7 +360,7 @@ public:
         bech32HRPs[SAPLING_EXTENDED_FVK]         = "pxviewtestsapling";
     }
 
-    const Checkpoints::CCheckpointData& Checkpoints() const
+    const CCheckpointData& Checkpoints() const
     {
         return dataTestnet;
     }
@@ -363,27 +376,27 @@ public:
     {
         strNetworkID = "regtest";
 
-        genesis = CreateGenesisBlock(1672725014, 1017993, 0x1e0ffff0, 1, 250 * COIN);
+        genesis = CreateGenesisBlock(1672725014, 1017993, 0x207fffff, 1, 250 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-
         assert(consensus.hashGenesisBlock == uint256S("0x000000503d43320b06fcbe20d8314cc871b20496df24a317a7028920cbd9c4df"));
         assert(genesis.hashMerkleRoot == uint256S("0xcd20e2816c1b185a9b6f369d51011b1186ff5b98f6f5bf657cd6039bf289fc29"));
 
         consensus.fPowAllowMinDifficultyBlocks = true;
-        consensus.powLimit   = ~UINT256_ZERO >> 20;   // NEBULAPROJECT starting difficulty is 1 / 2^12
-        consensus.posLimitV1 = ~UINT256_ZERO >> 24;
-        consensus.posLimitV2 = ~UINT256_ZERO >> 20;
+        consensus.fPowNoRetargeting = true;
+        consensus.powLimit   = uint256S("0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV1 = uint256S("0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimitV2 = uint256S("0x00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nBudgetCycleBlocks = 144;         // approx 10 cycles per day
         consensus.nBudgetFeeConfirmations = 3;      // (only 8-blocks window for finalization on regtest)
         consensus.nCoinbaseMaturity = 100;
         consensus.nFutureTimeDriftPoW = 7200;
         consensus.nFutureTimeDriftPoS = 180;
-        consensus.nMasternodeCountDrift = 4;        // num of MN we allow the see-saw payments to be off by
         consensus.nMaxMoneyOut = 43199500 * COIN;
-        consensus.nPoolMaxTransactions = 2;
+        consensus.nMNCollateralAmt = 500 * COIN;
+        consensus.nMNBlockReward = 3 * COIN;
         consensus.nProposalEstablishmentTime = 60 * 5;  // at least 5 min old to make it into a budget
         consensus.nStakeMinAge = 0;
-        consensus.nStakeMinDepth = 2;
+        consensus.nStakeMinDepth = 20;
         consensus.nTargetTimespan = 40 * 60;
         consensus.nTargetTimespanV2 = 30 * 60;
         consensus.nTargetSpacing = 1 * 60;
@@ -404,7 +417,6 @@ public:
         consensus.height_last_invalid_UTXO = -1;
         consensus.height_last_ZC_AccumCheckpoint = 310;     // no checkpoints on regtest
         consensus.height_last_ZC_WrappedSerials = -1;
-        consensus.height_ZC_RecalcAccumulators = 999999999;
 
         // Zerocoin-related params
         consensus.ZC_Modulus = "25195908475657893494027183240048398571429282126204032027777137836043662020707595556264018525880784"
@@ -419,6 +431,7 @@ public:
         consensus.ZC_MinMintFee = 1 * CENT;
         consensus.ZC_MinStakeDepth = 10;
         consensus.ZC_TimeStart = 0;                 // not implemented on regtest
+        consensus.ZC_HeightStart = 0;
 
         // Network upgrades
         consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
@@ -436,6 +449,10 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].nActivationHeight          =
                 Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
         consensus.vUpgrades[Consensus::UPGRADE_V5_0].nActivationHeight          = 300;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 300;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 251;
+        consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -459,6 +476,9 @@ public:
         // Testnet nebulaproject BIP44 coin type is '1' (All coin's testnet default)
         base58Prefixes[EXT_COIN_TYPE] = {0x80, 0x00, 0x00, 0x01};
 
+        // Reject non-standard transactions by default
+        fRequireStandard = true;
+
         // Sapling
         bech32HRPs[SAPLING_PAYMENT_ADDRESS]      = "ptestsapling";
         bech32HRPs[SAPLING_FULL_VIEWING_KEY]     = "pviewtestsapling";
@@ -467,7 +487,7 @@ public:
         bech32HRPs[SAPLING_EXTENDED_FVK]         = "pxviewtestsapling";
     }
 
-    const Checkpoints::CCheckpointData& Checkpoints() const
+    const CCheckpointData& Checkpoints() const
     {
         return dataRegtest;
     }

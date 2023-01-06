@@ -5,7 +5,7 @@
 """Test RPC commands for budget proposal creation, submission, and verification."""
 
 from test_framework.test_framework import NebulaprojectTestFramework
-from test_framework.util import *
+from test_framework.util import assert_equal, assert_raises_rpc_error
 
 
 class BudgetProposalTest(NebulaprojectTestFramework):
@@ -63,16 +63,16 @@ class BudgetProposalTest(NebulaprojectTestFramework):
 
         self.log.info("Test without URL scheme")
         scheme = ''
-        assert_raises_rpc_error(-8, "Invalid URL, check scheme (e.g. https://)", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
+        assert_raises_rpc_error(-8, "Invalid URL", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
 
         self.log.info('Test with invalid URL scheme: ftp://')
         scheme = 'ftp://'
-        assert_raises_rpc_error(-8, "Invalid URL, check scheme (e.g. https://)", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
+        assert_raises_rpc_error(-8, "Invalid URL", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
 
         self.log.info("Test with invalid double character scheme: hhttps://")
         scheme = 'hhttps://'
         url = 'test.com'
-        assert_raises_rpc_error(-8, "Invalid URL, check scheme (e.g. https://)", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
+        assert_raises_rpc_error(-8, "Invalid URL", self.nodes[0].preparebudget, name, scheme + url, 1, nextsuperblock, address, 100)
 
         self.log.info("Test with valid scheme: http://")
         name = 'testvalid1'

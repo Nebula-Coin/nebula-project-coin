@@ -62,6 +62,7 @@
         <file alias="ic-arrow-white-right">nebulaproject/res/img/ic-arrow-white-right.svg</file>
         <file alias="ic-check-active">nebulaproject/res/img/ic-check-active.svg</file>
         <file alias="ic-check-box">nebulaproject/res/img/ic-check-box.svg</file>
+        <file alias="ic-check-box-light">nebulaproject/res/img/ic-check-box-light.svg</file>
         <file alias="ic-check-box-liliac-indeterminate">nebulaproject/res/img/ic-check-box-liliac-indeterminate.svg</file>
         <file alias="ic-check-connect-off">nebulaproject/res/img/ic-check-connect-off.svg</file>
         <file alias="ic-check-connect">nebulaproject/res/img/ic-check-connect.svg</file>
@@ -222,5 +223,19 @@
         <file alias="ic-check-cold-staking-enabled">nebulaproject/res/img/ic-check-cold-staking-enabled.svg</file>
         <file alias="ic-information">nebulaproject/res/img/ic-information.svg</file>
         <file alias="ic-information-hover">nebulaproject/res/img/ic-information-hover.svg</file>
+        <file alias="ic-check-vote">nebulaproject/res/img/ic-check-vote.svg</file>
+        <file alias="ic-check-vote-active">nebulaproject/res/img/ic-check-vote-active.svg</file>
+        <file alias="ic-check-vote-dark">nebulaproject/res/img/ic-check-vote-dark.svg</file>
+        <file alias="ic-check-vote-active-dark">nebulaproject/res/img/ic-check-vote-active-dark.svg</file>
+        <file alias="ic-filter">nebulaproject/res/img/ic-filter.svg</file>
+        <file alias="ic-link">nebulaproject/res/img/ic-link.svg</file>
+        <file alias="ic-link-hover">nebulaproject/res/img/ic-link-hover.svg</file>
+        <file alias="ic-nav-governance">nebulaproject/res/img/ic-nav-governance.svg</file>
+        <file alias="ic-nav-governance-active">nebulaproject/res/img/ic-nav-governance-active.svg</file>
+        <file alias="ic-nav-governance-hover">nebulaproject/res/img/ic-nav-governance-hover.svg</file>
+        <file alias="ic-time">nebulaproject/res/img/ic-time.svg</file>
+        <file alias="img-empty-governance">nebulaproject/res/img/img-empty-governance.svg</file>
+        <file alias="img-empty-dark-governance">nebulaproject/res/img/img-empty-dark-governance.svg</file>
+        <file alias="ic-check-block">nebulaproject/res/img/ic-check-block.svg</file>
     </qresource>
 </RCC>

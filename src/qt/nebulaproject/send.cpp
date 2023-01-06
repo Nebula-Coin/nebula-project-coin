@@ -73,7 +73,7 @@ SendWidget::SendWidget(NEBULAPROJECTGUI* parent) :
 
     // Uri
     ui->btnUri->setTitleClassAndText("btn-title-grey", tr("Open URI"));
-    ui->btnUri->setSubTitleClassAndText("text-subtitle", tr("Parse a payment request"));
+    ui->btnUri->setSubTitleClassAndText("text-subtitle", tr("Parse a NEBULAPROJECT URI"));
 
     // Shield coins
     ui->btnShieldCoins->setTitleClassAndText("btn-title-grey", tr("Shield Coins"));
@@ -415,18 +415,13 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
     // First check SPORK_20 (before unlock)
     bool isShieldedTx = hasShieldedOutput || !isTransparent;
     if (isShieldedTx) {
-        if (!walletModel->isSaplingEnforced()) {
-            inform(tr("Cannot perform shielded operations, v5 upgrade isn't being enforced yet!"));
-            return;
-        }
-
         if (walletModel->isSaplingInMaintenance()) {
             inform(tr("Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)"));
             return;
         }
     }
 
-    auto ptrUnlockedContext = MakeUnique<WalletModel::UnlockContext>(walletModel->requestUnlock());
+    auto ptrUnlockedContext = std::make_unique<WalletModel::UnlockContext>(walletModel->requestUnlock());
     if (!ptrUnlockedContext->isValid()) {
         // Unlock wallet was cancelled
         inform(tr("Cannot send, wallet locked"));
@@ -702,8 +697,8 @@ void SendWidget::onCoinControlClicked()
 
 void SendWidget::onShieldCoinsClicked()
 {
-    if (!walletModel->isSaplingEnforced()) {
-        inform(tr("Cannot perform shielded operations, v5 upgrade isn't being enforced yet!"));
+    if (walletModel->isSaplingInMaintenance()) {
+        inform(tr("Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)"));
         return;
     }
 
@@ -727,7 +722,7 @@ void SendWidget::onShieldCoinsClicked()
         nBytesInputs += 1;
         // nVersion, nType, nLockTime and vin/vout len sizes
         nBytesInputs += 10;
-        CAmount nPayFee = GetMinRelayFee(nBytesInputs, false) * DEFAULT_SHIELDEDTXFEE_K;
+        CAmount nPayFee = GetMinRelayFee(nBytesInputs) * DEFAULT_SHIELDEDTXFEE_K;
 
         // load recipient
         QList<SendCoinsRecipient> recipients;
@@ -748,14 +743,12 @@ void SendWidget::onShieldCoinsClicked()
 
         // Process spending
         ProcessSend(recipients, true, [this](QList<SendCoinsRecipient>& recipients) {
-            QString strAddress;
-            auto res = walletModel->getNewShieldedAddress(strAddress, "");
-            // Check for generation errors
-            if (!res.result) {
+            auto res = walletModel->getNewShieldedAddress("");
+            if (!res) {
                 inform(tr("Error generating address to shield NBLAs"));
                 return false;
             }
-            recipients.back().address = strAddress;
+            recipients.back().address = QString::fromStdString(res.getObjResult()->ToString());
             resetCoinControl();
             return true;
         });
@@ -792,13 +785,6 @@ void SendWidget::onCheckBoxChanged()
 void SendWidget::onNBLASelected(bool _isTransparent)
 {
     isTransparent = _isTransparent;
-
-    if (!isTransparent && !walletModel->isSaplingEnforced()) {
-        ui->pushLeft->setChecked(true);
-        inform(tr("Cannot perform shielded operations, v5 upgrade isn't being enforced yet!"));
-        return;
-    }
-
     resetChangeAddress();
     resetCoinControl();
     tryRefreshAmounts();
@@ -875,14 +861,19 @@ void SendWidget::onMenuClicked(SendMultiRow* entry)
         this->menu = new TooltipMenu(window, this);
         this->menu->setCopyBtnText(tr("Add Memo"));
         this->menu->setEditBtnText(tr("Save contact"));
-        this->menu->setMinimumSize(this->menu->width() + 30,this->menu->height());
+        this->menu->setLastBtnVisible(true);
+        this->menu->setLastBtnText(tr("Subtract fee"));
+        this->menu->setMinimumHeight(157);
+        this->menu->setMinimumSize(this->menu->width() + 30, this->menu->height());
         connect(this->menu, &TooltipMenu::message, this, &AddressesWidget::message);
         connect(this->menu, &TooltipMenu::onEditClicked, this, &SendWidget::onContactMultiClicked);
         connect(this->menu, &TooltipMenu::onDeleteClicked, this, &SendWidget::onDeleteClicked);
         connect(this->menu, &TooltipMenu::onCopyClicked, this, &SendWidget::onEntryMemoClicked);
+        connect(this->menu, &TooltipMenu::onLastClicked, this, &SendWidget::onSubtractFeeFromAmountChecked);
     } else {
         this->menu->hide();
     }
+    this->menu->setLastBtnCheckable(true, entry->getSubtractFeeFromAmount());
     menu->move(pos);
     menu->show();
 }
@@ -941,6 +932,13 @@ void SendWidget::onEntryMemoClicked()
     if (focusedEntry) {
         focusedEntry->launchMemoDialog();
         menu->setCopyBtnText(tr("Memo"));
+    }
+}
+
+void SendWidget::onSubtractFeeFromAmountChecked()
+{
+    if (focusedEntry) {
+        focusedEntry->toggleSubtractFeeFromAmount();
     }
 }
 

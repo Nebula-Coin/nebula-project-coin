@@ -37,7 +37,7 @@ private:
     std::string strInvalid;
 
     // Functions used inside IsWellFormed/UpdateValid - setting strInvalid
-    bool IsExpired(int nCurrentHeight);
+    bool updateExpired(int nCurrentHeight);
     bool CheckStartEnd();
     bool CheckAmount(const CAmount& nTotalBudget);
     bool CheckName();
@@ -51,6 +51,8 @@ protected:
     std::string strProposals;
 
 public:
+    static constexpr unsigned int MAX_PROPOSALS_PER_CYCLE = 100;
+
     // Set in CBudgetManager::AddFinalizedBudget via CheckCollateral
     int64_t nTime;
 
@@ -84,7 +86,7 @@ public:
     int GetBlockStart() const { return nBlockStart; }
     int GetBlockEnd() const { return nBlockStart + (int)(vecBudgetPayments.size() - 1); }
     const uint256& GetFeeTXHash() const { return nFeeTXHash;  }
-    int GetVoteCount() const { return (int)mapVotes.size(); }
+    int GetVoteCount() const;
     std::vector<uint256> GetVotesHashes() const;
     bool IsPaidAlready(const uint256& nProposalHash, const uint256& nBlockHash, int nBlockHeight) const;
     TrxValidationStatus IsTransactionValid(const CTransaction& txNew, const uint256& nBlockHash, int nBlockHeight) const;
@@ -106,18 +108,16 @@ public:
     }
 
     // Serialization for local DB
-    ADD_SERIALIZE_METHODS;
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action)
+    SERIALIZE_METHODS(CFinalizedBudget, obj)
     {
-        READWRITE(LIMITED_STRING(strBudgetName, 20));
-        READWRITE(nFeeTXHash);
-        READWRITE(nTime);
-        READWRITE(nBlockStart);
-        READWRITE(vecBudgetPayments);
-        READWRITE(fAutoChecked);
-        READWRITE(mapVotes);
-        READWRITE(strProposals);
+        READWRITE(LIMITED_STRING(obj.strBudgetName, 20));
+        READWRITE(obj.nFeeTXHash);
+        READWRITE(obj.nTime);
+        READWRITE(obj.nBlockStart);
+        READWRITE(obj.vecBudgetPayments);
+        READWRITE(obj.fAutoChecked);
+        READWRITE(obj.mapVotes);
+        READWRITE(obj.strProposals);
     }
 
     // Serialization for network messages.
@@ -155,19 +155,14 @@ public:
         nAmount(_nAmount)
     {}
 
-    ADD_SERIALIZE_METHODS;
-
     //for saving to the serialized db
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action)
-    {
-        READWRITE(*(CScriptBase*)(&payee));
-        READWRITE(nAmount);
-        READWRITE(nProposalHash);
-    }
+    SERIALIZE_METHODS(CTxBudgetPayment, obj) { READWRITE(obj.payee, obj.nAmount, obj.nProposalHash); }
 
     // compare payments by proposal hash
-    inline bool operator>(const CTxBudgetPayment& other) const { return nProposalHash > other.nProposalHash; }
+    inline bool operator>(const CTxBudgetPayment& other) const
+    {
+        return UintToArith256(nProposalHash) > UintToArith256(other.nProposalHash);
+    }
 
 };
 

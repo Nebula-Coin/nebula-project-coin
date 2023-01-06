@@ -7,7 +7,6 @@
 
 #include "qt/nebulaproject/pwidget.h"
 #include "qt/nebulaproject/furabstractlistitemdelegate.h"
-#include "qt/nebulaproject/mnmodel.h"
 #include "qt/nebulaproject/tooltipmenu.h"
 #include "walletmodel.h"
 
@@ -17,6 +16,7 @@
 #include <QWidget>
 
 class NEBULAPROJECTGUI;
+class MNModel;
 
 namespace Ui {
 class MasterNodesWidget;
@@ -34,8 +34,7 @@ public:
 
     explicit MasterNodesWidget(NEBULAPROJECTGUI *parent = nullptr);
     ~MasterNodesWidget();
-
-    void loadWalletModel() override;
+    void setMNModel(MNModel* _mnModel);
 
     void run(int type) override;
     void onError(QString error, int type) override;
@@ -52,7 +51,7 @@ private Q_SLOTS:
     void onDeleteMNClicked();
     void onInfoMNClicked();
     void updateListState();
-    void updateModelAndInform(QString informText);
+    void updateModelAndInform(const QString& informText);
 
 private:
     Ui::MasterNodesWidget *ui;
@@ -65,9 +64,8 @@ private:
     std::atomic<bool> isLoading;
 
     bool checkMNsNetwork();
-    void startAlias(QString strAlias);
+    void startAlias(const QString& strAlias);
     bool startAll(QString& failedMN, bool onlyMissing);
-    bool startMN(const CMasternodeConfig::CMasternodeEntry& mne, std::string& strError);
 };
 
 #endif // MASTERNODESWIDGET_H

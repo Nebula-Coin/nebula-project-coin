@@ -11,7 +11,6 @@
 #include <QFile>
 #include <QGraphicsDropShadowEffect>
 #include <QListView>
-#include <QStyle>
 
 Qt::Modifier SHORT_KEY
 #ifdef Q_OS_MAC
@@ -57,7 +56,7 @@ void openDialogFullScreen(QWidget* parent, QWidget* dialog)
     dialog->resize(parent->width(), parent->height());
 }
 
-bool openDialogWithOpaqueBackgroundY(QDialog* widget, NEBULAPROJECTGUI* gui, double posX, int posY)
+bool openDialogWithOpaqueBackgroundY(QDialog* widget, NEBULAPROJECTGUI* gui, double posX, int posY, bool hideOpaqueBackground)
 {
     widget->setWindowFlags(Qt::CustomizeWindowHint);
     widget->setAttribute(Qt::WA_TranslucentBackground, true);
@@ -70,7 +69,7 @@ bool openDialogWithOpaqueBackgroundY(QDialog* widget, NEBULAPROJECTGUI* gui, dou
     animation->start(QAbstractAnimation::DeleteWhenStopped);
     widget->activateWindow();
     bool res = widget->exec();
-    gui->showHide(false);
+    if (hideOpaqueBackground) gui->showHide(false);
     return res;
 }
 
@@ -100,7 +99,7 @@ bool openDialogWithOpaqueBackgroundFullScreen(QDialog* widget, NEBULAPROJECTGUI*
     return res;
 }
 
-QPixmap encodeToQr(QString str, QString& errorStr, QColor qrColor)
+QPixmap encodeToQr(const QString& str, QString& errorStr, const QColor& qrColor)
 {
     if (!str.isEmpty()) {
         // limit URI length
@@ -183,6 +182,7 @@ void setSortTxTypeFilter(QComboBox* filter, SortEdit* lineEditType)
     filter->addItem(QObject::tr("Hot stakes"), TransactionFilterProxy::TYPE(TransactionRecord::StakeHot));
     filter->addItem(QObject::tr("Delegated"), TransactionFilterProxy::TYPE(TransactionRecord::P2CSDelegationSent) | TransactionFilterProxy::TYPE(TransactionRecord::P2CSDelegationSentOwner));
     filter->addItem(QObject::tr("Delegations"), TransactionFilterProxy::TYPE(TransactionRecord::P2CSDelegation));
+    filter->addItem(QObject::tr("DAO payment"), TransactionFilterProxy::TYPE(TransactionRecord::BudgetPayment));
 }
 
 void setupSettings(QSettings* settings)
@@ -230,36 +230,26 @@ void updateStyle(QWidget* widget)
 
 QColor getRowColor(bool isLightTheme, bool isHovered, bool isSelected)
 {
-    if (isLightTheme) {
-        if (isSelected) {
-            return QColor("#25b088ff");
-        } else if (isHovered) {
-            return QColor("#25bababa");
-        } else {
-            return QColor("#ffffff");
-        }
+    if (isSelected) {
+        return QColor("#25b088ff");
+    } else if (isHovered) {
+        return QColor("#25bababa");
     } else {
-        if (isSelected) {
-            return QColor("#25b088ff");
-        } else if (isHovered) {
-            return QColor("#25bababa");
-        } else {
-            return QColor("#0f0b16");
-        }
+        return isLightTheme ? QColor("#ffffff") : QColor("#0f0b16");
     }
 }
 
-void initComboBox(QComboBox* combo, QLineEdit* lineEdit, QString cssClass)
+void initComboBox(QComboBox* combo, QLineEdit* lineEdit, QString cssClass, bool setView)
 {
-    setCssProperty(combo, cssClass);
+    setCssProperty(combo, std::move(cssClass));
     combo->setEditable(true);
     if (lineEdit) {
         lineEdit->setReadOnly(true);
         lineEdit->setAlignment(Qt::AlignRight);
         combo->setLineEdit(lineEdit);
     }
-    combo->setStyleSheet("selection-background-color:transparent; selection-color:transparent;");
-    combo->setView(new QListView());
+    combo->setStyleSheet("selection-background-color:transparent;");
+    if (setView) combo->setView(new QListView());
 }
 
 void fillAddressSortControls(SortEdit* seType, SortEdit* seOrder, QComboBox* boxType, QComboBox* boxOrder)
@@ -284,7 +274,7 @@ void initCssEditLine(QLineEdit* edit, bool isDialog)
     else
         setCssEditLine(edit, true, false);
     setShadow(edit);
-    edit->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    edit->setAttribute(Qt::WA_MacShowFocusRect, false);
 }
 
 void setCssEditLine(QLineEdit* edit, bool isValid, bool forceUpdate)
@@ -339,15 +329,16 @@ void setCssSubtitleScreen(QWidget* wid)
     setCssProperty(wid, "text-subtitle", false);
 }
 
-void setCssProperty(std::initializer_list<QWidget*> args, QString value)
+void setCssProperty(std::initializer_list<QWidget*> args, const QString& value)
 {
     for (QWidget* w : args) {
         setCssProperty(w, value);
     }
 }
 
-void setCssProperty(QWidget* wid, QString value, bool forceUpdate)
+void setCssProperty(QWidget* wid, const QString& value, bool forceUpdate)
 {
+    if (wid->property("cssClass") == value) return;
     wid->setProperty("cssClass", value);
     forceUpdateStyle(wid, forceUpdate);
 }

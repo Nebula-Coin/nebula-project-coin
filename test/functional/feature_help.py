@@ -3,10 +3,12 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Verify that starting nebulaproject with -h works as expected."""
+
 import subprocess
 
 from test_framework.test_framework import NebulaprojectTestFramework
 from test_framework.util import assert_equal
+
 
 class HelpTest(NebulaprojectTestFramework):
     def set_test_params(self):

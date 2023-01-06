@@ -1,5 +1,5 @@
-// Copyright (c) 2015 The Bitcoin Core developers
-// Copyright (c) 2018-2020 The PIVX developers
+// Copyright (c) 2015-2021 The Bitcoin Core developers
+// Copyright (c) 2018-2021 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 
 #include "chainparamsbase.h"
 #include "compat.h"
-#include "util.h"
+#include "util/system.h"
 #include "netbase.h"
 #include "rpc/protocol.h" // For HTTP status codes
 #include "sync.h"
@@ -22,13 +22,13 @@
 #include <signal.h>
 #include <future>
 
-#include <event2/event.h>
-#include <event2/http.h>
 #include <event2/thread.h>
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>
 #include <event2/keyvalq_struct.h>
+
+#include "support/events.h"
 
 #ifdef EVENT__HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -124,13 +124,6 @@ public:
         std::unique_lock<std::mutex> lock(cs);
         running = false;
         cond.notify_all();
-    }
-
-    /** Return current depth of queue */
-    size_t Depth()
-    {
-        std::unique_lock<std::mutex> lock(cs);
-        return queue.size();
     }
 };
 
@@ -304,9 +297,12 @@ static bool HTTPBindAddresses(struct evhttp* http)
     std::vector<std::pair<std::string, uint16_t> > endpoints;
 
     // Determine what addresses to bind to
-    if (!gArgs.IsArgSet("-rpcallowip")) { // Default to loopback if not allowing external IPs
+    if (!(gArgs.IsArgSet("-rpcallowip") && gArgs.IsArgSet("-rpcbind"))) { // Default to loopback if not allowing external IPs
         endpoints.emplace_back("::1", defaultPort);
         endpoints.emplace_back("127.0.0.1", defaultPort);
+        if (gArgs.IsArgSet("-rpcallowip")) {
+            LogPrintf("WARNING: option -rpcallowip was specified without -rpcbind; this doesn't usually make sense\n");
+        }
         if (gArgs.IsArgSet("-rpcbind")) {
             LogPrintf("WARNING: option -rpcbind was ignored because -rpcallowip was not specified, refusing to allow everyone to connect\n");
         }
@@ -317,9 +313,6 @@ static bool HTTPBindAddresses(struct evhttp* http)
             SplitHostPort(strRPCBind, port, host);
             endpoints.emplace_back(host, port);
         }
-    } else { // No specific bind address specified, bind to any
-        endpoints.emplace_back("::", defaultPort);
-        endpoints.emplace_back("0.0.0.0", defaultPort);
     }
 
     // Bind addresses
@@ -327,6 +320,10 @@ static bool HTTPBindAddresses(struct evhttp* http)
         LogPrint(BCLog::HTTP, "Binding RPC on address %s port %i\n", i->first, i->second);
         evhttp_bound_socket *bind_handle = evhttp_bind_socket_with_handle(http, i->first.empty() ? NULL : i->first.c_str(), i->second);
         if (bind_handle) {
+            CNetAddr addr;
+            if (i->first.empty() || (LookupHost(i->first, addr, false) && addr.IsBindAny())) {
+                LogPrintf("WARNING: the RPC server is not safe to expose to untrusted networks such as the public internet\n");
+            }
             boundSockets.push_back(bind_handle);
         } else {
             LogPrintf("Binding RPC on address %s port %i failed.\n", i->first, i->second);
@@ -357,9 +354,6 @@ static void libevent_log_cb(int severity, const char *msg)
 
 bool InitHTTPServer()
 {
-    struct evhttp* http = 0;
-    struct event_base* base = 0;
-
     if (!InitHTTPAllowList())
         return false;
 
@@ -385,17 +379,13 @@ bool InitHTTPServer()
     evthread_use_pthreads();
 #endif
 
-    base = event_base_new(); // XXX RAII
-    if (!base) {
-        LogPrintf("Couldn't create an event_base: exiting\n");
-        return false;
-    }
+    raii_event_base base_ctr = obtain_event_base();
 
     /* Create a new evhttp object to handle requests. */
-    http = evhttp_new(base); // XXX RAII
+    raii_evhttp http_ctr = obtain_evhttp(base_ctr.get());
+    struct evhttp* http = http_ctr.get();
     if (!http) {
         LogPrintf("couldn't create evhttp. Exiting.\n");
-        event_base_free(base);
         return false;
     }
 
@@ -406,8 +396,6 @@ bool InitHTTPServer()
 
     if (!HTTPBindAddresses(http)) {
         LogPrintf("Unable to bind any endpoint for RPC server\n");
-        evhttp_free(http);
-        event_base_free(base);
         return false;
     }
 
@@ -416,8 +404,9 @@ bool InitHTTPServer()
     LogPrintf("HTTP: creating work queue of depth %d\n", workQueueDepth);
 
     workQueue = new WorkQueue<HTTPClosure>(workQueueDepth);
-    eventBase = base;
-    eventHTTP = http;
+    // tranfer ownership to eventBase/HTTP via .release()
+    eventBase = base_ctr.release();
+    eventHTTP = http_ctr.release();
     return true;
 }
 
@@ -678,4 +667,16 @@ void UnregisterHTTPHandler(const std::string &prefix, bool exactMatch)
         LogPrint(BCLog::HTTP, "Unregistering HTTP handler for %s (exactmatch %d)\n", prefix, exactMatch);
         pathHandlers.erase(i);
     }
+}
+
+std::string urlDecode(const std::string &urlEncoded) {
+    std::string res;
+    if (!urlEncoded.empty()) {
+        char *decoded = evhttp_uridecode(urlEncoded.c_str(), false, NULL);
+        if (decoded) {
+            res = std::string(decoded);
+            free(decoded);
+        }
+    }
+    return res;
 }

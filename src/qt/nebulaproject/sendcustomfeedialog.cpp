@@ -5,9 +5,10 @@
 #include "qt/nebulaproject/sendcustomfeedialog.h"
 #include "qt/nebulaproject/forms/ui_sendcustomfeedialog.h"
 #include "qt/nebulaproject/qtutils.h"
-#include "walletmodel.h"
+#include "qt/walletmodel.h"
 #include "optionsmodel.h"
 #include "guiutil.h"
+#include "wallet/fees.h"
 #include <QListView>
 #include <QComboBox>
 
@@ -62,6 +63,9 @@ void SendCustomFeeDialog::showEvent(QShowEvent* event)
 {
     FocusedDialog::showEvent(event);
     updateFee();
+
+    ui->labelCustomFee->setText(BitcoinUnits::name(walletModel->getOptionsModel()->getDisplayUnit()) + "/kB");
+
     if (walletModel->hasWalletCustomFee()) {
         ui->checkBoxCustom->setChecked(true);
         onCustomChecked();
@@ -123,19 +127,19 @@ void SendCustomFeeDialog::accept()
     // Check insane fee
     const CAmount insaneFee = ::minRelayTxFee.GetFeePerK() * 10000;
     if (customFee >= insaneFee) {
-        ui->lineEditCustomFee->setText(BitcoinUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), insaneFee - CWallet::GetRequiredFee(1000)));
+        ui->lineEditCustomFee->setText(BitcoinUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), insaneFee - walletModel->getNetMinFee()));
         inform(tr("Fee too high. Must be below: %1").arg(
                 BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), insaneFee)));
-    } else if (customFee < CWallet::GetRequiredFee(1000)) {
+    } else if (customFee < walletModel->getNetMinFee()) {
         CAmount nFee = 0;
         if (walletModel->hasWalletCustomFee()) {
             walletModel->getWalletCustomFee(nFee);
         } else {
-            nFee = CWallet::GetRequiredFee(1000);
+            nFee = walletModel->getNetMinFee();
         }
         ui->lineEditCustomFee->setText(BitcoinUnits::format(walletModel->getOptionsModel()->getDisplayUnit(), nFee));
         inform(tr("Fee too low. Must be at least: %1").arg(
-                BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), CWallet::GetRequiredFee(1000))));
+                BitcoinUnits::formatWithUnit(walletModel->getOptionsModel()->getDisplayUnit(), walletModel->getNetMinFee())));
     } else {
         walletModel->setWalletCustomFee(fUseCustomFee, customFee);
         QDialog::accept();
@@ -149,8 +153,16 @@ void SendCustomFeeDialog::clear()
 
 CFeeRate SendCustomFeeDialog::getFeeRate()
 {
-    return ui->checkBoxRecommended->isChecked() ?
-           feeRate : CFeeRate(GUIUtil::parseValue(ui->lineEditCustomFee->text(), walletModel->getOptionsModel()->getDisplayUnit()));
+    if (ui->checkBoxRecommended->isChecked()) {
+        return feeRate;
+    }
+
+    // Parse custom value
+    auto value = GUIUtil::parseValue(ui->lineEditCustomFee->text(), walletModel->getOptionsModel()->getDisplayUnit());
+    if (value <= 0) {
+        inform(tr("Invalid custom fee amount"));
+    }
+    return CFeeRate(value);
 }
 
 bool SendCustomFeeDialog::isCustomFeeChecked()

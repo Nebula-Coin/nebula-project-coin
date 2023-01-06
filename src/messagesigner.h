@@ -9,10 +9,11 @@
 #include "key.h"
 #include "primitives/transaction.h" // for CTxIn
 
-extern const std::string strMessageMagic;
+class CBLSPublicKey;
+class CBLSSecretKey;
 
 enum MessageVersion {
-        MESS_VER_STRMESS    = 0,
+        MESS_VER_STRMESS    = 0, // old format
         MESS_VER_HASH       = 1,
 };
 
@@ -23,14 +24,19 @@ class CMessageSigner
 public:
     /// Set the private/public key values, returns true if successful
     static bool GetKeysFromSecret(const std::string& strSecret, CKey& keyRet, CPubKey& pubkeyRet);
+    static bool GetKeysFromSecret(const std::string& strSecret, CKey& keyRet, CKeyID& keyIDRet);
     /// Get the hash based on the input message
     static uint256 GetMessageHash(const std::string& strMessage);
     /// Sign the message, returns true if successful
     static bool SignMessage(const std::string& strMessage, std::vector<unsigned char>& vchSigRet, const CKey& key);
+    /// Sign the message with BLS key, returns true if successful
+    static bool SignMessage(const std::string& strMessage, std::vector<unsigned char>& vchSigRet, const CBLSSecretKey& key);
     /// Verify the message signature, returns true if successful
     static bool VerifyMessage(const CPubKey& pubkey, const std::vector<unsigned char>& vchSig, const std::string& strMessage, std::string& strErrorRet);
     /// Verify the message signature, returns true if successful
     static bool VerifyMessage(const CKeyID& keyID, const std::vector<unsigned char>& vchSig, const std::string& strMessage, std::string& strErrorRet);
+    /// Verify the message BLS signature, returns true if successful
+    static bool VerifyMessage(const CBLSPublicKey& pk, const std::vector<unsigned char>& vchSig, const std::string& strMessage);
 };
 
 /** Helper class for signing hashes and checking their signatures
@@ -40,14 +46,19 @@ class CHashSigner
 public:
     /// Sign the hash, returns true if successful
     static bool SignHash(const uint256& hash, const CKey& key, std::vector<unsigned char>& vchSigRet);
+    /// Sign the hash with BLS key, returns true if successful
+    static bool SignHash(const uint256& hash, const CBLSSecretKey& key, std::vector<unsigned char>& vchSigRet);
     /// Verify the hash signature, returns true if successful
     static bool VerifyHash(const uint256& hash, const CPubKey& pubkey, const std::vector<unsigned char>& vchSig, std::string& strErrorRet);
     /// Verify the hash signature, returns true if successful
     static bool VerifyHash(const uint256& hash, const CKeyID& keyID, const std::vector<unsigned char>& vchSig, std::string& strErrorRet);
+    /// Verify the hash BLS signature, returns true if successful
+    static bool VerifyHash(const uint256& hash, const CBLSPublicKey& pk, const std::vector<unsigned char>& vchSig);
 };
 
 /** Base Class for all signed messages on the network
  */
+
 class CSignedMessage
 {
 protected:
@@ -76,6 +87,10 @@ public:
     void SetVchSig(const std::vector<unsigned char>& vchSigIn) { vchSig = vchSigIn; }
     std::vector<unsigned char> GetVchSig() const { return vchSig; }
     std::string GetSignatureBase64() const;
+
+    // Sign-Verify with BLS
+    bool Sign(const CBLSSecretKey& sk);
+    bool CheckSignature(const CBLSPublicKey& pk) const;
 };
 
 #endif

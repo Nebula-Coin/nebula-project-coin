@@ -1,13 +1,18 @@
+// Copyright (c) 2016-2020 The ZCash developers
+// Copyright (c) 2021 The PIVX developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or https://www.opensource.org/licenses/mit-license.php.
+
 #ifndef ZC_NOTE_H_
 #define ZC_NOTE_H_
 
+#include "optional.h"
 #include "sapling/address.h"
 #include "sapling/noteencryption.h"
 #include "sapling/sapling.h"
 #include "uint256.h"
 
 #include <array>
-#include <boost/optional.hpp>
 
 namespace libzcash {
 
@@ -41,8 +46,8 @@ public:
     SaplingNote(const SaplingPaymentAddress& address, uint64_t value);
     virtual ~SaplingNote() {};
 
-    boost::optional<uint256> cmu() const;
-    boost::optional<uint256> nullifier(const SaplingFullViewingKey& vk, const uint64_t position) const;
+    Optional<uint256> cmu() const;
+    Optional<uint256> nullifier(const SaplingFullViewingKey& vk, const uint64_t position) const;
 };
 
 class BaseNotePlaintext {
@@ -72,14 +77,14 @@ public:
     SaplingNotePlaintext(const SaplingNote& note, const std::array<unsigned char, ZC_MEMO_SIZE>& memo);
     virtual ~SaplingNotePlaintext() {}
 
-    static boost::optional<SaplingNotePlaintext> decrypt(
+    static Optional<SaplingNotePlaintext> decrypt(
         const SaplingEncCiphertext& ciphertext,
         const uint256& ivk,
         const uint256& epk,
         const uint256& cmu
     );
 
-    static boost::optional<SaplingNotePlaintext> decrypt(
+    static Optional<SaplingNotePlaintext> decrypt(
         const SaplingEncCiphertext& ciphertext,
         const uint256& epk,
         const uint256& esk,
@@ -87,12 +92,10 @@ public:
         const uint256& cmu
     );
 
-    boost::optional<SaplingNote> note(const SaplingIncomingViewingKey& ivk) const;
+    Optional<SaplingNote> note(const SaplingIncomingViewingKey& ivk) const;
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    SERIALIZE_METHODS(SaplingNotePlaintext, obj)
+    {
         unsigned char leadingByte = 0x01;
         READWRITE(leadingByte);
 
@@ -100,13 +103,13 @@ public:
             throw std::ios_base::failure("lead byte of SaplingNotePlaintext is not recognized");
         }
 
-        READWRITE(d);           // 11 bytes
-        READWRITE(value_);      // 8 bytes
-        READWRITE(rcm);         // 32 bytes
-        READWRITE(memo_);       // 512 bytes
+        READWRITE(obj.d);           // 11 bytes
+        READWRITE(obj.value_);      // 8 bytes
+        READWRITE(obj.rcm);         // 32 bytes
+        READWRITE(obj.memo_);       // 512 bytes
     }
 
-    boost::optional<SaplingNotePlaintextEncryptionResult> encrypt(const uint256& pk_d) const;
+    Optional<SaplingNotePlaintextEncryptionResult> encrypt(const uint256& pk_d) const;
 };
 
 class SaplingOutgoingPlaintext
@@ -121,15 +124,13 @@ public:
         esk(_esk)
     {}
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(pk_d);        // 8 bytes
-        READWRITE(esk);         // 8 bytes
+    SERIALIZE_METHODS(SaplingOutgoingPlaintext, obj)
+    {
+        READWRITE(obj.pk_d);        // 8 bytes
+        READWRITE(obj.esk);         // 8 bytes
     }
 
-    static boost::optional<SaplingOutgoingPlaintext> decrypt(
+    static Optional<SaplingOutgoingPlaintext> decrypt(
         const SaplingOutCiphertext& ciphertext,
         const uint256& ovk,
         const uint256& cv,

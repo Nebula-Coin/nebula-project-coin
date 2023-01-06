@@ -6,7 +6,7 @@
 #include "budget/finalizedbudget.h"
 
 #include "masternodeman.h"
-
+#include "validation.h"
 
 CFinalizedBudget::CFinalizedBudget() :
         fAutoChecked(false),
@@ -73,13 +73,6 @@ bool CFinalizedBudget::AddOrUpdateVote(const CFinalizedBudgetVote& vote, std::st
         strAction = "Existing vote updated:";
     }
 
-    if (voteTime > GetTime() + (60 * 60)) {
-        strError = strprintf("new vote is too far ahead of current time - %s - nTime %lli - Max Time %lli\n",
-                vote.GetHash().ToString(), voteTime, GetTime() + (60 * 60));
-        LogPrint(BCLog::MNBUDGET, "%s: %s\n", __func__, strError);
-        return false;
-    }
-
     mapVotes[mnId] = vote;
     LogPrint(BCLog::MNBUDGET, "%s: %s %s\n", __func__, strAction.c_str(), vote.GetHash().ToString().c_str());
     return true;
@@ -106,14 +99,6 @@ void CFinalizedBudget::SetSynced(bool synced)
         }
     }
 }
-
-// Sort budget proposals by hash
-struct sortProposalsByHash  {
-    bool operator()(const CBudgetProposal* left, const CBudgetProposal* right)
-    {
-        return (left->GetHash() < right->GetHash());
-    }
-};
 
 bool CFinalizedBudget::CheckProposals(const std::map<uint256, CBudgetProposal>& mapWinningProposals) const
 {
@@ -208,11 +193,11 @@ bool CFinalizedBudget::CheckStartEnd()
     }
 
     // The following 2 checks check the same (basically if vecBudgetPayments.size() > 100)
-    if (GetBlockEnd() - nBlockStart > 100) {
+    if (GetBlockEnd() - nBlockStart + 1 > MAX_PROPOSALS_PER_CYCLE) {
         strInvalid = "Invalid BlockEnd";
         return false;
     }
-    if ((int)vecBudgetPayments.size() > 100) {
+    if ((int)vecBudgetPayments.size() > MAX_PROPOSALS_PER_CYCLE) {
         strInvalid = "Invalid budget payments count (too many)";
         return false;
     }
@@ -241,14 +226,12 @@ bool CFinalizedBudget::CheckName()
     return true;
 }
 
-bool CFinalizedBudget::IsExpired(int nCurrentHeight)
+bool CFinalizedBudget::updateExpired(int nCurrentHeight)
 {
-    // Remove budgets after their last payment block
+    // Remove finalized budgets 2 * MAX_PROPOSALS_PER_CYCLE blocks after their end
     const int nBlockEnd = GetBlockEnd();
-    const int nBlocksPerCycle = Params().GetConsensus().nBudgetCycleBlocks;
-    const int nLastSuperBlock = nCurrentHeight - nCurrentHeight % nBlocksPerCycle;
-    if (nBlockEnd < nLastSuperBlock) {
-        strInvalid = strprintf("(ends at block %ld) too old and obsolete", nBlockEnd);
+    if (nCurrentHeight >= nBlockEnd + 2 * MAX_PROPOSALS_PER_CYCLE) {
+        strInvalid = strprintf("(ends at block %ld) too old and obsolete (current %ld)", nBlockEnd, nCurrentHeight);
         return true;
     }
 
@@ -264,13 +247,24 @@ bool CFinalizedBudget::UpdateValid(int nCurrentHeight)
 {
     fValid = false;
 
-    if (IsExpired(nCurrentHeight)) {
+    if (updateExpired(nCurrentHeight)) {
         return false;
     }
 
     fValid = true;
     strInvalid.clear();
     return true;
+}
+
+int CFinalizedBudget::GetVoteCount() const
+{
+    int ret = 0;
+    for (const auto& it : mapVotes) {
+        if (it.second.IsValid()) {
+            ret++;
+        }
+    }
+    return ret;
 }
 
 std::vector<uint256> CFinalizedBudget::GetVotesHashes() const
@@ -413,7 +407,7 @@ bool CFinalizedBudget::operator>(const CFinalizedBudget& other) const
     const int count = GetVoteCount();
     const int otherCount = other.GetVoteCount();
 
-    if (count == otherCount) return GetFeeTXHash() > other.GetFeeTXHash();
+    if (count == otherCount) return UintToArith256(GetFeeTXHash()) > UintToArith256(other.GetFeeTXHash());
 
     return count > otherCount;
 }

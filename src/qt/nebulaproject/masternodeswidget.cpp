@@ -14,16 +14,12 @@
 #include "clientmodel.h"
 #include "fs.h"
 #include "guiutil.h"
-#include "init.h"
 #include "masternode-sync.h"
 #include "masternodeconfig.h"
 #include "masternodeman.h"
-#include "sync.h"
-#include "wallet/wallet.h"
-#include "askpassphrasedialog.h"
-#include "util.h"
+#include "util/system.h"
+#include "qt/nebulaproject/mnmodel.h"
 #include "qt/nebulaproject/optionbutton.h"
-#include <iostream>
 #include <fstream>
 
 #define DECORATION_SIZE 65
@@ -34,8 +30,6 @@
 class MNHolder : public FurListRow<QWidget*>
 {
 public:
-    MNHolder();
-
     explicit MNHolder(bool _isLightTheme) : FurListRow(), isLightTheme(_isLightTheme) {}
 
     MNRow* createHolder(int pos) override
@@ -77,7 +71,6 @@ MasterNodesWidget::MasterNodesWidget(NEBULAPROJECTGUI *parent) :
             new MNHolder(isLightTheme()),
             this
     );
-    mnModel = new MNModel(this);
 
     this->setStyleSheet(parent->styleSheet());
 
@@ -145,13 +138,12 @@ void MasterNodesWidget::hideEvent(QHideEvent *event)
     if (timer) timer->stop();
 }
 
-void MasterNodesWidget::loadWalletModel()
+void MasterNodesWidget::setMNModel(MNModel* _mnModel)
 {
-    if (walletModel) {
-        ui->listMn->setModel(mnModel);
-        ui->listMn->setModelColumn(AddressTableModel::Label);
-        updateListState();
-    }
+    mnModel = _mnModel;
+    ui->listMn->setModel(mnModel);
+    ui->listMn->setModelColumn(AddressTableModel::Label);
+    updateListState();
 }
 
 void MasterNodesWidget::updateListState()
@@ -222,15 +214,29 @@ void MasterNodesWidget::onEditMNClicked()
     }
 }
 
-void MasterNodesWidget::startAlias(QString strAlias)
+static bool startMN(const CMasternodeConfig::CMasternodeEntry& mne, int chainHeight, std::string& strError)
+{
+    CMasternodeBroadcast mnb;
+    if (!CMasternodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb, false, chainHeight))
+        return false;
+
+    mnodeman.UpdateMasternodeList(mnb);
+    if (activeMasternode.pubKeyMasternode == mnb.GetPubKey()) {
+        activeMasternode.EnableHotColdMasterNode(mnb.vin, mnb.addr);
+    }
+    mnb.Relay();
+    return true;
+}
+
+void MasterNodesWidget::startAlias(const QString& strAlias)
 {
     QString strStatusHtml;
     strStatusHtml += "Alias: " + strAlias + " ";
 
-    for (CMasternodeConfig::CMasternodeEntry mne : masternodeConfig.getEntries()) {
+    for (const auto& mne : masternodeConfig.getEntries()) {
         if (mne.getAlias() == strAlias.toStdString()) {
             std::string strError;
-            strStatusHtml += (!startMN(mne, strError)) ? ("failed to start.\nError: " + QString::fromStdString(strError)) : "successfully started.";
+            strStatusHtml += (!startMN(mne, walletModel->getLastBlockProcessedNum(), strError)) ? ("failed to start.\nError: " + QString::fromStdString(strError)) : "successfully started.";
             break;
         }
     }
@@ -238,21 +244,10 @@ void MasterNodesWidget::startAlias(QString strAlias)
     updateModelAndInform(strStatusHtml);
 }
 
-void MasterNodesWidget::updateModelAndInform(QString informText)
+void MasterNodesWidget::updateModelAndInform(const QString& informText)
 {
     mnModel->updateMNList();
     inform(informText);
-}
-
-bool MasterNodesWidget::startMN(const CMasternodeConfig::CMasternodeEntry& mne, std::string& strError)
-{
-    CMasternodeBroadcast mnb;
-    if (!CMasternodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb))
-        return false;
-
-    mnodeman.UpdateMasternodeList(mnb);
-    mnb.Relay();
-    return true;
 }
 
 void MasterNodesWidget::onStartAllClicked(int type)
@@ -262,7 +257,7 @@ void MasterNodesWidget::onStartAllClicked(int type)
     if (isLoading) {
         inform(tr("Background task is being executed, please wait"));
     } else {
-        std::unique_ptr<WalletModel::UnlockContext> pctx = MakeUnique<WalletModel::UnlockContext>(walletModel->requestUnlock());
+        std::unique_ptr<WalletModel::UnlockContext> pctx = std::make_unique<WalletModel::UnlockContext>(walletModel->requestUnlock());
         if (!pctx->isValid()) {
             warn(tr("Start ALL masternodes failed"), tr("Wallet unlock cancelled"));
             return;
@@ -279,7 +274,7 @@ bool MasterNodesWidget::startAll(QString& failText, bool onlyMissing)
 {
     int amountOfMnFailed = 0;
     int amountOfMnStarted = 0;
-    for (CMasternodeConfig::CMasternodeEntry mne : masternodeConfig.getEntries()) {
+    for (const auto& mne : masternodeConfig.getEntries()) {
         // Check for missing only
         QString mnAlias = QString::fromStdString(mne.getAlias());
         if (onlyMissing && !mnModel->isMNInactive(mnAlias)) {
@@ -294,7 +289,7 @@ bool MasterNodesWidget::startAll(QString& failText, bool onlyMissing)
         }
 
         std::string strError;
-        if (!startMN(mne, strError)) {
+        if (!startMN(mne, walletModel->getLastBlockProcessedNum(), strError)) {
             amountOfMnFailed++;
         } else {
             amountOfMnStarted++;
@@ -386,7 +381,7 @@ void MasterNodesWidget::onDeleteMNClicked()
     fs::path pathBootstrap = GetDataDir() / strConfFile;
     if (fs::exists(pathBootstrap)) {
         fs::path pathMasternodeConfigFile = GetMasternodeConfigFile();
-        fs::ifstream streamConfig(pathMasternodeConfigFile);
+        fsbridge::ifstream streamConfig(pathMasternodeConfigFile);
 
         if (!streamConfig.good()) {
             inform(tr("Invalid masternode.conf file"));
@@ -452,7 +447,7 @@ void MasterNodesWidget::onDeleteMNClicked()
             bool convertOK = false;
             unsigned int indexOut = outIndex.toUInt(&convertOK);
             if (convertOK) {
-                COutPoint collateralOut(uint256(txId.toStdString()), indexOut);
+                COutPoint collateralOut(uint256S(txId.toStdString()), indexOut);
                 walletModel->unlockCoin(collateralOut);
             }
 
@@ -476,12 +471,14 @@ void MasterNodesWidget::onCreateMNClicked()
         return;
     }
 
-    if (walletModel->getBalance() <= (COIN * 10000)) {
-        inform(tr("Not enough balance to create a masternode, 50,000 %1 required.").arg(CURRENCY_UNIT.c_str()));
+    CAmount mnCollateralAmount = clientModel->getMNCollateralRequiredAmount();
+    if (walletModel->getBalance() <= mnCollateralAmount) {
+        inform(tr("Not enough balance to create a masternode, %1 required.")
+            .arg(GUIUtil::formatBalance(mnCollateralAmount, BitcoinUnits::NBLA)));
         return;
     }
     showHideOp(true);
-    MasterNodeWizardDialog *dialog = new MasterNodeWizardDialog(walletModel, window);
+    MasterNodeWizardDialog *dialog = new MasterNodeWizardDialog(walletModel, clientModel, window);
     if (openDialogWithOpaqueBackgroundY(dialog, window, 5, 7)) {
         if (dialog->isOk) {
             // Update list

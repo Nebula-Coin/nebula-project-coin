@@ -4,23 +4,25 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
-from test_framework.test_framework import NebulaprojectTestFramework
-from test_framework.util import *
 from decimal import Decimal
+
+from test_framework.test_framework import NebulaprojectTestFramework
+from test_framework.util import assert_equal, assert_true, connect_nodes, get_coinstake_address
 
 def connect_nodes_bi(nodes, a, b):
     connect_nodes(nodes[a], b)
     connect_nodes(nodes[b], a)
 
-class WalletNullifiersTest (NebulaprojectTestFramework):
+class WalletNullifiersTest(NebulaprojectTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 4
-        saplingUpgrade = ['-nuparams=v5_shield:201']
-        self.extra_args = [saplingUpgrade, saplingUpgrade, saplingUpgrade, saplingUpgrade]
+        # whitelist all peers to speed up tx relay / mempool sync
+        self.extra_args = [['-nuparams=v5_shield:201', "-whitelist=127.0.0.1"]] * self.num_nodes
 
     def run_test (self):
         self.nodes[0].generate(1) # activate Sapling
+        self.sync_all()
 
         # add shield addr to node 0
         myzaddr0 = self.nodes[0].getnewshieldaddress()
@@ -31,9 +33,7 @@ class WalletNullifiersTest (NebulaprojectTestFramework):
         recipients = []
         recipients.append({"address":myzaddr0, "amount":Decimal('10.0') - Decimal('1')}) # utxo amount less fee
 
-        txid = self.nodes[0].shieldsendmany(mytaddr, recipients)
-
-        self.sync_all()
+        self.nodes[0].shieldsendmany(mytaddr, recipients)
         self.nodes[0].generate(1)
         self.sync_all()
 

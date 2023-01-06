@@ -102,7 +102,7 @@ const CLogCategoryDesc LogCategories[] = {
         {BCLog::TOR,            "tor"},
         {BCLog::MEMPOOL,        "mempool"},
         {BCLog::HTTP,           "http"},
-        {BCLog::BENCH,          "bench"},
+        {BCLog::BENCHMARK,      "bench"},
         {BCLog::ZMQ,            "zmq"},
         {BCLog::DB,             "db"},
         {BCLog::RPC,            "rpc"},
@@ -111,7 +111,7 @@ const CLogCategoryDesc LogCategories[] = {
         {BCLog::SELECTCOINS,    "selectcoins"},
         {BCLog::REINDEX,        "reindex"},
         {BCLog::CMPCTBLOCK,     "cmpctblock"},
-        {BCLog::RAND,           "rand"},
+        {BCLog::RANDOM,         "rand"},
         {BCLog::PRUNE,          "prune"},
         {BCLog::PROXY,          "proxy"},
         {BCLog::MEMPOOLREJ,     "mempoolrej"},
@@ -126,6 +126,7 @@ const CLogCategoryDesc LogCategories[] = {
         {BCLog::MNPING,         "mnping"},
         {BCLog::SAPLING,        "sapling"},
         {BCLog::SPORKS,         "sporks"},
+        {BCLog::VALIDATION,     "validation"},
         {BCLog::ALL,            "1"},
         {BCLog::ALL,            "all"},
 };
@@ -182,9 +183,19 @@ std::string BCLog::Logger::LogTimestampStr(const std::string &str)
     if (!m_log_timestamps)
         return str;
 
-    if (m_started_new_line)
-        strStamped =  DateTimeStrFormat("%Y-%m-%d %H:%M:%S", GetTime()) + ' ' + str;
-    else
+    if (m_started_new_line) {
+        int64_t nTimeMicros = GetTimeMicros();
+        strStamped = FormatISO8601DateTime(nTimeMicros/1000000);
+        if (m_log_time_micros) {
+            strStamped.pop_back();
+            strStamped += strprintf(".%06dZ", nTimeMicros % 1000000);
+        }
+        int64_t mocktime = GetMockTime();
+        if (mocktime) {
+            strStamped += " (mocktime: " + FormatISO8601DateTime(mocktime) + ")";
+        }
+        strStamped += ' ' + str;
+    } else
         strStamped = str;
 
     if (!str.empty() && str[str.size()-1] == '\n')

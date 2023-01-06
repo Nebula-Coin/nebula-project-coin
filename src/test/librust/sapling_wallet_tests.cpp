@@ -7,7 +7,6 @@
 
 #include <sodium.h>
 
-#include "base58.h"
 #include "chainparams.h"
 #include "key_io.h"
 #include "validation.h"
@@ -70,12 +69,12 @@ uint256 GetWitnessesAndAnchors(CWallet& wallet,
     return saplingAnchor;
 }
 
-BOOST_FIXTURE_TEST_SUITE(sapling_wallet_tests, WalletTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(sapling_wallet_tests, WalletRegTestingSetup)
 
 BOOST_AUTO_TEST_CASE(SetSaplingNoteAddrsInCWalletTx) {
-    auto consensusParams = RegtestActivateSapling();
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK(wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -96,7 +95,7 @@ BOOST_AUTO_TEST_CASE(SetSaplingNoteAddrsInCWalletTx) {
     BOOST_CHECK(nf != boost::none);
     uint256 nullifier = nf.get();
 
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(fvk.ovk, pk, 40000000, {});
     builder.SetFee(10000000);
@@ -124,9 +123,6 @@ BOOST_AUTO_TEST_CASE(SetSaplingNoteAddrsInCWalletTx) {
     BOOST_CHECK(nullifier == wtx.mapSaplingNoteData[op].nullifier);
     BOOST_CHECK(nd.witnessHeight == wtx.mapSaplingNoteData[op].witnessHeight);
     BOOST_CHECK(witness == wtx.mapSaplingNoteData[op].witnesses.front());
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
 // Cannot add note data for an index which does not exist in tx.vShieldedOutput
@@ -142,10 +138,11 @@ BOOST_AUTO_TEST_CASE(SetInvalidSaplingNoteDataInCWalletTx) {
     BOOST_CHECK_THROW(wtx.SetSaplingNoteData(noteData), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE(FindMySaplingNotes) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(FindMySaplingNotes)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK(wallet.cs_wallet);
     wallet.SetupSPKM(false);
 
@@ -158,7 +155,7 @@ BOOST_AUTO_TEST_CASE(FindMySaplingNotes) {
     auto testNote = GetTestSaplingNote(pa, 50000000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(extfvk.fvk.ovk, pa, 25000000, {});
     builder.SetFee(10000000);
@@ -175,16 +172,14 @@ BOOST_AUTO_TEST_CASE(FindMySaplingNotes) {
     BOOST_CHECK(wallet.HaveSaplingSpendingKey(extfvk));
     noteMap = wallet.GetSaplingScriptPubKeyMan()->FindMySaplingNotes(*wtx.tx).first;
     BOOST_CHECK_EQUAL(2, noteMap.size());
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
 // Generate note A and spend to create note B, from which we spend to create two conflicting transactions
-BOOST_AUTO_TEST_CASE(GetConflictedSaplingNotes) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(GetConflictedSaplingNotes)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -207,7 +202,7 @@ BOOST_AUTO_TEST_CASE(GetConflictedSaplingNotes) {
     auto witness = saplingTree.witness();
 
     // Generate tx to create output note B
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(extfvk.fvk.ovk, pk, 35000000, {});
     builder.SetFee(10000000);
@@ -262,14 +257,14 @@ BOOST_AUTO_TEST_CASE(GetConflictedSaplingNotes) {
     anchor = saplingTree.root();
 
     // Create transaction to spend note B
-    auto builder2 = TransactionBuilder(consensusParams, 2);
+    auto builder2 = TransactionBuilder(consensusParams);
     builder2.SetFee(10000000);
     builder2.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder2.AddSaplingOutput(extfvk.fvk.ovk, pk, 20000000, {});
     auto tx2 = builder2.Build().GetTxOrThrow();
 
     // Create conflicting transaction which also spends note B
-    auto builder3 = TransactionBuilder(consensusParams, 2);
+    auto builder3 = TransactionBuilder(consensusParams);
     builder3.SetFee(10000000);
     builder3.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder3.AddSaplingOutput(extfvk.fvk.ovk, pk, 19999000, {});
@@ -296,17 +291,15 @@ BOOST_AUTO_TEST_CASE(GetConflictedSaplingNotes) {
     BOOST_CHECK(std::set<uint256>({hash2, hash3}) == c3);
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
-BOOST_AUTO_TEST_CASE(SaplingNullifierIsSpent) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(SaplingNullifierIsSpent)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -319,7 +312,7 @@ BOOST_AUTO_TEST_CASE(SaplingNullifierIsSpent) {
     auto testNote = GetTestSaplingNote(pa, 50000000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk,  testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(extfvk.fvk.ovk, pa, 2500000, {});
     builder.SetFee(10000000);
@@ -351,24 +344,21 @@ BOOST_AUTO_TEST_CASE(SaplingNullifierIsSpent) {
     BOOST_CHECK(chainActive.Contains(&fakeIndex));
     BOOST_CHECK_EQUAL(0, chainActive.Height());
 
-    std::vector<CTransactionRef> vtxConflicted;
-    wallet.BlockConnected(std::make_shared<CBlock>(block), mi->second, vtxConflicted);
+    wallet.BlockConnected(std::make_shared<CBlock>(block), mi->second);
 
     // Verify note has been spent
     BOOST_CHECK(wallet.GetSaplingScriptPubKeyMan()->IsSaplingSpent(nullifier));
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
-BOOST_AUTO_TEST_CASE(NavigateFromSaplingNullifierToNote) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(NavigateFromSaplingNullifierToNote)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -381,7 +371,7 @@ BOOST_AUTO_TEST_CASE(NavigateFromSaplingNullifierToNote) {
     auto testNote = GetTestSaplingNote(pa, 50000000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(extfvk.fvk.ovk, pa, 25000000, {});
     builder.SetFee(10000000);
@@ -455,18 +445,16 @@ BOOST_AUTO_TEST_CASE(NavigateFromSaplingNullifierToNote) {
     }
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
 // Create note A, spend A to create note B, spend and verify note B is from me.
-BOOST_AUTO_TEST_CASE(SpentSaplingNoteIsFromMe) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(SpentSaplingNoteIsFromMe)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -486,7 +474,7 @@ BOOST_AUTO_TEST_CASE(SpentSaplingNoteIsFromMe) {
     auto witness = saplingTree.witness();
 
     // Generate transaction, which sends funds to note B
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, note, anchor, witness);
     builder.AddSaplingOutput(extfvk.fvk.ovk, pk, 25000000, {});
     builder.SetFee(10000000);
@@ -559,7 +547,7 @@ BOOST_AUTO_TEST_CASE(SpentSaplingNoteIsFromMe) {
     anchor = saplingTree.root();
 
     // Create transaction to spend note B
-    auto builder2 = TransactionBuilder(consensusParams, 2);
+    auto builder2 = TransactionBuilder(consensusParams);
     builder2.AddSaplingSpend(expsk, note2, anchor, spend_note_witness);
     builder2.AddSaplingOutput(extfvk.fvk.ovk, pk, 12500000, {});
     builder2.SetFee(10000000);
@@ -602,18 +590,16 @@ BOOST_AUTO_TEST_CASE(SpentSaplingNoteIsFromMe) {
     BOOST_CHECK(wallet.GetSaplingScriptPubKeyMan()->mapSaplingNullifiersToNotes.count(nullifier2));
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
     mapBlockIndex.erase(blockHash2);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
-BOOST_AUTO_TEST_CASE(CachedWitnessesEmptyChain) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(CachedWitnessesEmptyChain)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     {
         LOCK(wallet.cs_wallet);
         setupWallet(wallet);
@@ -647,16 +633,14 @@ BOOST_AUTO_TEST_CASE(CachedWitnessesEmptyChain) {
 
     // Until zcash#1302 is implemented, this should triggger an assertion
     BOOST_CHECK_THROW(wallet.DecrementNoteWitnesses(&index), std::runtime_error);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
-BOOST_AUTO_TEST_CASE(CachedWitnessesChainTip) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(CachedWitnessesChainTip)
+{
+    auto consensusParams = Params().GetConsensus();
 
     libzcash::SaplingExtendedSpendingKey sk = GetTestMasterSaplingSpendingKey();
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     {
         LOCK(wallet.cs_wallet);
         setupWallet(wallet);
@@ -731,11 +715,11 @@ BOOST_AUTO_TEST_CASE(CachedWitnessesChainTip) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(CachedWitnessesDecrementFirst) {
-    auto consensusParams = RegtestActivateSapling();
-
+BOOST_AUTO_TEST_CASE(CachedWitnessesDecrementFirst)
+{
+    auto consensusParams = Params().GetConsensus();
     libzcash::SaplingExtendedSpendingKey sk = GetTestMasterSaplingSpendingKey();
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     {
         LOCK(wallet.cs_wallet);
         setupWallet(wallet);
@@ -799,11 +783,12 @@ BOOST_AUTO_TEST_CASE(CachedWitnessesDecrementFirst) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(CachedWitnessesCleanIndex) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(CachedWitnessesCleanIndex)
+{
+    auto consensusParams = Params().GetConsensus();
 
     libzcash::SaplingExtendedSpendingKey sk = GetTestMasterSaplingSpendingKey();
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     {
         LOCK(wallet.cs_wallet);
         setupWallet(wallet);
@@ -875,11 +860,12 @@ BOOST_AUTO_TEST_CASE(CachedWitnessesCleanIndex) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(ClearNoteWitnessCache) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(ClearNoteWitnessCache)
+{
+    auto consensusParams = Params().GetConsensus();
 
     libzcash::SaplingExtendedSpendingKey sk = GetTestMasterSaplingSpendingKey();
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     {
         LOCK(wallet.cs_wallet);
         setupWallet(wallet);
@@ -923,10 +909,11 @@ BOOST_AUTO_TEST_CASE(ClearNoteWitnessCache) {
     BOOST_CHECK_EQUAL(0, wallet.GetSaplingScriptPubKeyMan()->nWitnessCacheSize);
 }
 
-BOOST_AUTO_TEST_CASE(UpdatedSaplingNoteData) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(UpdatedSaplingNoteData)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     // Need to lock cs_main for now due the lock ordering. future: revamp all of this function to only lock where is needed.
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
@@ -947,7 +934,7 @@ BOOST_AUTO_TEST_CASE(UpdatedSaplingNoteData) {
     auto testNote = GetTestSaplingNote(pa, 50000000);
 
     // Generate transaction
-    auto builder = TransactionBuilder(consensusParams, 1);
+    auto builder = TransactionBuilder(consensusParams);
     builder.AddSaplingSpend(expsk, testNote.note, testNote.tree.root(), testNote.tree.witness());
     builder.AddSaplingOutput(extfvk.fvk.ovk, pa2, 25000000, {});
     builder.SetFee(10000000);
@@ -1029,17 +1016,15 @@ BOOST_AUTO_TEST_CASE(UpdatedSaplingNoteData) {
     BOOST_CHECK(wtx.mapSaplingNoteData[sop1].witnesses.front() == testNote.tree.witness());
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
-BOOST_AUTO_TEST_CASE(MarkAffectedSaplingTransactionsDirty) {
-    auto consensusParams = RegtestActivateSapling();
+BOOST_AUTO_TEST_CASE(MarkAffectedSaplingTransactionsDirty)
+{
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     LOCK2(cs_main, wallet.cs_wallet);
     setupWallet(wallet);
 
@@ -1060,7 +1045,7 @@ BOOST_AUTO_TEST_CASE(MarkAffectedSaplingTransactionsDirty) {
 
     // Generate shielding tx from transparent to Sapling
     // 0.5 t-NBLA in, 0.4 z-NBLA out, 0.1 t-NBLA fee
-    auto builder = TransactionBuilder(consensusParams, 1, &keystore);
+    auto builder = TransactionBuilder(consensusParams, &keystore);
     builder.AddTransparentInput(COutPoint(), scriptPubKey, 50000000);
     builder.AddSaplingOutput(extfvk.fvk.ovk, pk, 40000000, {});
     builder.SetFee(10000000);
@@ -1115,7 +1100,7 @@ BOOST_AUTO_TEST_CASE(MarkAffectedSaplingTransactionsDirty) {
 
     // Create a Sapling-only transaction
     // 0.4 z-NBLA in, 0.25 z-NBLA out, 0.1 t-NBLA fee, 0.05 z-NBLA change
-    auto builder2 = TransactionBuilder(consensusParams, 2);
+    auto builder2 = TransactionBuilder(consensusParams);
     builder2.AddSaplingSpend(expsk, note, anchor, witness);
     builder2.AddSaplingOutput(extfvk.fvk.ovk, pk, 25000000, {});
     builder2.SetFee(10000000);
@@ -1141,18 +1126,15 @@ BOOST_AUTO_TEST_CASE(MarkAffectedSaplingTransactionsDirty) {
     BOOST_CHECK(!wallet.mapWallet.at(hash).IsAmountCached(CWalletTx::AmountType::DEBIT, ISMINE_SPENDABLE));
 
     // Tear down
-    chainActive.SetTip(NULL);
+    chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
 BOOST_AUTO_TEST_CASE(GetNotes)
 {
-    auto consensusParams = RegtestActivateSapling();
+    auto consensusParams = Params().GetConsensus();
 
-    CWallet& wallet = *pwalletMain;
+    CWallet& wallet = m_wallet;
     libzcash::SaplingPaymentAddress pk;
     uint256 blockHash;
     std::vector<SaplingOutPoint> saplingOutpoints;
@@ -1174,7 +1156,7 @@ BOOST_AUTO_TEST_CASE(GetNotes)
         auto scriptPubKey = GetScriptForDestination(tsk.GetPubKey().GetID());
 
         // Generate shielding tx from transparent to Sapling (five 1 NBLA notes)
-        auto builder = TransactionBuilder(consensusParams, 1, &keystore);
+        auto builder = TransactionBuilder(consensusParams, &keystore);
         builder.AddTransparentInput(COutPoint(), scriptPubKey, 510000000);
         for (int i=0; i<5; i++) builder.AddSaplingOutput(extfvk.fvk.ovk, pk, 100000000, {});
         builder.SetFee(10000000);
@@ -1239,9 +1221,6 @@ BOOST_AUTO_TEST_CASE(GetNotes)
     LOCK(cs_main);
     chainActive.SetTip(nullptr);
     mapBlockIndex.erase(blockHash);
-
-    // Revert to default
-    RegtestDeactivateSapling();
 }
 
 // TODO: Back port WriteWitnessCache & SetBestChainIgnoresTxsWithoutShieldedData test cases.

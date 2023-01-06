@@ -7,7 +7,7 @@
 #include "chainparamsbase.h"
 
 #include "tinyformat.h"
-#include "util.h"
+#include "util/system.h"
 
 #include <assert.h>
 
@@ -17,51 +17,13 @@ const std::string CBaseChainParams::REGTEST = "regtest";
 
 void AppendParamsHelpMessages(std::string& strUsage, bool debugHelp)
 {
-    strUsage += HelpMessageGroup(_("Chain selection options:"));
-    strUsage += HelpMessageOpt("-testnet", _("Use the test chain"));
+    strUsage += HelpMessageGroup("Chain selection options:");
+    strUsage += HelpMessageOpt("-testnet", "Use the test chain");
     if (debugHelp) {
         strUsage += HelpMessageOpt("-regtest", "Enter regression test mode, which uses a special chain in which blocks can be solved instantly. "
                                                "This is intended for regression testing tools and app development.");
     }
 }
-
-/**
- * Main network
- */
-class CBaseMainParams : public CBaseChainParams
-{
-public:
-    CBaseMainParams()
-    {
-        nRPCPort = 1819;
-    }
-};
-
-/**
- * Testnet (v5)
- */
-class CBaseTestNetParams : public CBaseChainParams
-{
-public:
-    CBaseTestNetParams()
-    {
-        nRPCPort = 1919;
-        strDataDir = "testnet5";
-    }
-};
-
-/*
- * Regression test
- */
-class CBaseRegTestParams : public CBaseChainParams
-{
-public:
-    CBaseRegTestParams()
-    {
-        nRPCPort = 1919;
-        strDataDir = "regtest";
-    }
-};
 
 static std::unique_ptr<CBaseChainParams> globalChainBaseParams;
 
@@ -74,11 +36,11 @@ const CBaseChainParams& BaseParams()
 std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain)
 {
     if (chain == CBaseChainParams::MAIN)
-        return std::unique_ptr<CBaseChainParams>(new CBaseMainParams());
+        return std::make_unique<CBaseChainParams>("", 1819);
     else if (chain == CBaseChainParams::TESTNET)
-        return std::unique_ptr<CBaseChainParams>(new CBaseTestNetParams());
+        return std::make_unique<CBaseChainParams>("testnet5", 1919);
     else if (chain == CBaseChainParams::REGTEST)
-        return std::unique_ptr<CBaseChainParams>(new CBaseRegTestParams());
+        return std::make_unique<CBaseChainParams>("regtest", 51477);
     else
         throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }
@@ -86,18 +48,5 @@ std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain
 void SelectBaseParams(const std::string& chain)
 {
     globalChainBaseParams = CreateBaseChainParams(chain);
-}
-
-std::string ChainNameFromCommandLine()
-{
-    bool fRegTest = gArgs.GetBoolArg("-regtest", false);
-    bool fTestNet = gArgs.GetBoolArg("-testnet", false);
-
-    if (fTestNet && fRegTest)
-        throw std::runtime_error("Invalid combination of -regtest and -testnet.");
-    if (fRegTest)
-        return CBaseChainParams::REGTEST;
-    if (fTestNet)
-        return CBaseChainParams::TESTNET;
-    return CBaseChainParams::MAIN;
+    gArgs.SelectConfigNetwork(chain);
 }

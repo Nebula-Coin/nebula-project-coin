@@ -17,9 +17,8 @@
 #include "guiinterface.h"
 #include "qt/nebulaproject/qtutils.h"
 #include "qt/nebulaproject/defaultdialog.h"
-
-#include "init.h"
-#include "util.h"
+#include "shutdown.h"
+#include "util/system.h"
 
 #include <QApplication>
 #include <QColor>
@@ -59,14 +58,14 @@ NEBULAPROJECTGUI::NEBULAPROJECTGUI(const NetworkStyle* networkStyle, QWidget* pa
 
 #ifdef ENABLE_WALLET
     /* if compiled with wallet support, -disablewallet can still disable the wallet */
-    enableWallet = !gArgs.GetBoolArg("-disablewallet", false);
+    enableWallet = !gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET);
 #else
     enableWallet = false;
 #endif // ENABLE_WALLET
 
     QString windowTitle = QString::fromStdString(gArgs.GetArg("-windowtitle", ""));
     if (windowTitle.isEmpty()) {
-        windowTitle = tr("NEBULAPROJECT Core") + " - ";
+        windowTitle = QString{PACKAGE_NAME} + " - ";
         windowTitle += ((enableWallet) ? tr("Wallet") : tr("Node"));
     }
     windowTitle += " " + networkStyle->getTitleAddText();
@@ -126,6 +125,7 @@ NEBULAPROJECTGUI::NEBULAPROJECTGUI(const NetworkStyle* networkStyle, QWidget* pa
         addressesWidget = new AddressesWidget(this);
         masterNodesWidget = new MasterNodesWidget(this);
         coldStakingWidget = new ColdStakingWidget(this);
+        governancewidget = new GovernanceWidget(this);
         settingsWidget = new SettingsWidget(this);
 
         // Add to parent
@@ -135,6 +135,7 @@ NEBULAPROJECTGUI::NEBULAPROJECTGUI(const NetworkStyle* networkStyle, QWidget* pa
         stackedContainer->addWidget(addressesWidget);
         stackedContainer->addWidget(masterNodesWidget);
         stackedContainer->addWidget(coldStakingWidget);
+        stackedContainer->addWidget(governancewidget);
         stackedContainer->addWidget(settingsWidget);
         stackedContainer->setCurrentWidget(dashboard);
 
@@ -202,6 +203,8 @@ void NEBULAPROJECTGUI::connectActions()
     connect(masterNodesWidget, &MasterNodesWidget::execDialog, this, &NEBULAPROJECTGUI::execDialog);
     connect(coldStakingWidget, &ColdStakingWidget::showHide, this, &NEBULAPROJECTGUI::showHide);
     connect(coldStakingWidget, &ColdStakingWidget::execDialog, this, &NEBULAPROJECTGUI::execDialog);
+    connect(governancewidget, &GovernanceWidget::showHide, this, &NEBULAPROJECTGUI::showHide);
+    connect(governancewidget, &GovernanceWidget::execDialog, this, &NEBULAPROJECTGUI::execDialog);
     connect(settingsWidget, &SettingsWidget::execDialog, this, &NEBULAPROJECTGUI::execDialog);
 }
 
@@ -210,7 +213,7 @@ void NEBULAPROJECTGUI::createTrayIcon(const NetworkStyle* networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
-    QString toolTip = tr("NEBULAPROJECT Core client") + " " + networkStyle->getTitleAddText();
+    QString toolTip = tr("%1 client").arg(PACKAGE_NAME) + " " + networkStyle->getTitleAddText();
     trayIcon->setToolTip(toolTip);
     trayIcon->setIcon(networkStyle->getAppIcon());
     trayIcon->hide();
@@ -251,7 +254,9 @@ void NEBULAPROJECTGUI::setClientModel(ClientModel* _clientModel)
         topBar->setClientModel(clientModel);
         dashboard->setClientModel(clientModel);
         sendWidget->setClientModel(clientModel);
+        masterNodesWidget->setClientModel(clientModel);
         settingsWidget->setClientModel(clientModel);
+        governancewidget->setClientModel(clientModel);
 
         // Receive and report messages from client model
         connect(clientModel, &ClientModel::message, this, &NEBULAPROJECTGUI::message);
@@ -260,6 +265,7 @@ void NEBULAPROJECTGUI::setClientModel(ClientModel* _clientModel)
         });
         connect(topBar, &TopBar::walletSynced, dashboard, &DashboardWidget::walletSynced);
         connect(topBar, &TopBar::walletSynced, coldStakingWidget, &ColdStakingWidget::walletSynced);
+        connect(topBar, &TopBar::tierTwoSynced, governancewidget, &GovernanceWidget::tierTwoSynced);
 
         // Get restart command-line parameters and handle restart
         connect(settingsWidget, &SettingsWidget::handleRestart, [this](QStringList arg){handleRestart(arg);});
@@ -337,6 +343,9 @@ void NEBULAPROJECTGUI::changeEvent(QEvent* e)
             if (!(wsevt->oldState() & Qt::WindowMinimized) && isMinimized()) {
                 QTimer::singleShot(0, this, &NEBULAPROJECTGUI::hide);
                 e->ignore();
+            } else if ((wsevt->oldState() & Qt::WindowMinimized) && !isMinimized()) {
+                QTimer::singleShot(0, this, &NEBULAPROJECTGUI::show);
+                e->ignore();
             }
         }
     }
@@ -349,10 +358,14 @@ void NEBULAPROJECTGUI::closeEvent(QCloseEvent* event)
     if (clientModel && clientModel->getOptionsModel()) {
         if (!clientModel->getOptionsModel()->getMinimizeOnClose()) {
             QApplication::quit();
+        } else {
+            QMainWindow::showMinimized();
+            event->ignore();
         }
     }
-#endif
+#else
     QMainWindow::closeEvent(event);
+#endif
 }
 
 
@@ -367,7 +380,7 @@ void NEBULAPROJECTGUI::messageInfo(const QString& text)
 
 void NEBULAPROJECTGUI::message(const QString& title, const QString& message, unsigned int style, bool* ret)
 {
-    QString strTitle =  tr("NEBULAPROJECT Core"); // default title
+    QString strTitle = QString{PACKAGE_NAME}; // default title
     // Default to information icon
     int nNotifyIcon = Notificator::Information;
 
@@ -436,7 +449,7 @@ bool NEBULAPROJECTGUI::openStandardDialog(QString title, QString body, QString o
     } else {
         dialog = new DefaultDialog();
         dialog->setText(title, body, okBtn);
-        dialog->setWindowTitle(tr("NEBULAPROJECT Core"));
+        dialog->setWindowTitle(PACKAGE_NAME);
         dialog->adjustSize();
         dialog->raise();
         dialog->exec();
@@ -498,6 +511,11 @@ void NEBULAPROJECTGUI::goToMasterNodes()
 void NEBULAPROJECTGUI::goToColdStaking()
 {
     showTop(coldStakingWidget);
+}
+
+void NEBULAPROJECTGUI::goToGovernance()
+{
+    showTop(governancewidget);
 }
 
 void NEBULAPROJECTGUI::goToSettings(){
@@ -593,7 +611,7 @@ int NEBULAPROJECTGUI::getNavWidth()
 void NEBULAPROJECTGUI::openFAQ(SettingsFaqWidget::Section section)
 {
     showHide(true);
-    SettingsFaqWidget* dialog = new SettingsFaqWidget(this);
+    SettingsFaqWidget* dialog = new SettingsFaqWidget(this, clientModel);
     dialog->setSection(section);
     openDialogWithOpaqueBackgroundFullScreen(dialog, this);
     dialog->deleteLater();
@@ -601,6 +619,19 @@ void NEBULAPROJECTGUI::openFAQ(SettingsFaqWidget::Section section)
 
 
 #ifdef ENABLE_WALLET
+void NEBULAPROJECTGUI::setGovModel(GovernanceModel* govModel)
+{
+    if (!stackedContainer || !clientModel) return;
+    governancewidget->setGovModel(govModel);
+}
+
+void NEBULAPROJECTGUI::setMNModel(MNModel* mnModel)
+{
+    if (!stackedContainer || !clientModel) return;
+    governancewidget->setMNModel(mnModel);
+    masterNodesWidget->setMNModel(mnModel);
+}
+
 bool NEBULAPROJECTGUI::addWallet(const QString& name, WalletModel* walletModel)
 {
     // Single wallet supported for now..
@@ -616,6 +647,7 @@ bool NEBULAPROJECTGUI::addWallet(const QString& name, WalletModel* walletModel)
     addressesWidget->setWalletModel(walletModel);
     masterNodesWidget->setWalletModel(walletModel);
     coldStakingWidget->setWalletModel(walletModel);
+    governancewidget->setWalletModel(walletModel);
     settingsWidget->setWalletModel(walletModel);
 
     // Connect actions..
@@ -626,6 +658,7 @@ bool NEBULAPROJECTGUI::addWallet(const QString& name, WalletModel* walletModel)
     connect(sendWidget, &SendWidget::message,this, &NEBULAPROJECTGUI::message);
     connect(receiveWidget, &ReceiveWidget::message,this, &NEBULAPROJECTGUI::message);
     connect(addressesWidget, &AddressesWidget::message,this, &NEBULAPROJECTGUI::message);
+    connect(governancewidget, &GovernanceWidget::message,this, &NEBULAPROJECTGUI::message);
     connect(settingsWidget, &SettingsWidget::message, this, &NEBULAPROJECTGUI::message);
 
     // Pass through transaction notifications
@@ -650,7 +683,7 @@ void NEBULAPROJECTGUI::incomingTransaction(const QString& date, int unit, const 
     // Only send notifications when not disabled
     if (!bdisableSystemnotifications) {
         // On new transaction, make an info balloon
-        message((amount) < 0 ? (pwalletMain->fMultiSendNotify == true ? tr("Sent MultiSend transaction") : tr("Sent transaction")) : tr("Incoming transaction"),
+        message(amount < 0 ? tr("Sent transaction") : tr("Incoming transaction"),
             tr("Date: %1\n"
                "Amount: %2\n"
                "Type: %3\n"
@@ -660,8 +693,6 @@ void NEBULAPROJECTGUI::incomingTransaction(const QString& date, int unit, const 
                 .arg(type)
                 .arg(address),
             CClientUIInterface::MSG_INFORMATION);
-
-        pwalletMain->fMultiSendNotify = false;
     }
 }
 

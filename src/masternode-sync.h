@@ -77,9 +77,9 @@ public:
     void AddedMasternodeList(const uint256& hash);
     void AddedMasternodeWinner(const uint256& hash);
     void AddedBudgetItem(const uint256& hash);
-    void GetNextAsset();
+    void SwitchToNextAsset();
     std::string GetSyncStatus();
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    void ProcessSyncStatusMsg(int nItemID, int itemCount);
     bool IsBudgetFinEmpty();
     bool IsBudgetPropEmpty();
 
@@ -90,7 +90,7 @@ public:
      * If it returns false, the Process() step is complete.
      * Otherwise Process() calls it again for a different node.
      */
-    bool SyncWithNode(CNode* pnode);
+    bool SyncWithNode(CNode* pnode, bool fLegacyMnObsolete);
     bool IsSynced();
     bool NotCompleted();
     bool IsSporkListSynced();
@@ -108,6 +108,7 @@ private:
     // Tier two sync node state
     // map of nodeID --> TierTwoPeerData
     std::map<NodeId, TierTwoPeerData> peersSyncState;
+    static int GetNextAsset(int currentAsset);
 
     void SyncRegtest(CNode* pnode);
 
@@ -122,6 +123,9 @@ private:
 
     // Check if an update is needed
     void CheckAndUpdateSyncStatus();
+
+    // Mark sync timeout
+    void syncTimeout(const std::string& reason);
 };
 
 #endif

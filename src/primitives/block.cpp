@@ -8,10 +8,9 @@
 
 #include "hash.h"
 #include "script/standard.h"
-#include "script/sign.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
-#include "util.h"
+#include "util/system.h"
 
 uint256 CBlockHeader::GetHash() const
 {

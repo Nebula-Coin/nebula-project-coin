@@ -16,7 +16,6 @@ QT_FORMS_UI = \
   qt/forms/helpmessagedialog.ui \
   qt/forms/intro.ui \
   qt/forms/openuridialog.ui \
-  qt/forms/optionsdialog.ui \
   qt/forms/rpcconsole.ui \
   qt/nebulaproject/forms/loadingdialog.ui \
   qt/nebulaproject/forms/snackbar.ui \
@@ -51,6 +50,12 @@ QT_FORMS_UI = \
   qt/nebulaproject/forms/addresseswidget.ui \
   qt/nebulaproject/forms/defaultdialog.ui \
   qt/nebulaproject/forms/coldstakingwidget.ui \
+  qt/nebulaproject/forms/proposalcard.ui \
+  qt/nebulaproject/forms/mnselectiondialog.ui \
+  qt/nebulaproject/forms/votedialog.ui \
+  qt/nebulaproject/forms/createproposaldialog.ui \
+  qt/nebulaproject/forms/proposalinfodialog.ui \
+  qt/nebulaproject/forms/governancewidget.ui \
   qt/nebulaproject/settings/forms/settingsbackupwallet.ui \
   qt/nebulaproject/settings/forms/settingsexportcsv.ui \
   qt/nebulaproject/settings/forms/settingsbittoolwidget.ui \
@@ -59,8 +64,6 @@ QT_FORMS_UI = \
   qt/nebulaproject/settings/forms/settingsfaqwidget.ui \
   qt/nebulaproject/settings/forms/settingsinformationwidget.ui \
   qt/nebulaproject/settings/forms/settingsmainoptionswidget.ui \
-  qt/nebulaproject/settings/forms/settingsmultisenddialog.ui \
-  qt/nebulaproject/settings/forms/settingsmultisendwidget.ui \
   qt/nebulaproject/settings/forms/settingssignmessagewidgets.ui \
   qt/nebulaproject/settings/forms/settingswalletoptionswidget.ui \
   qt/nebulaproject/settings/forms/settingswalletrepairwidget.ui \
@@ -87,7 +90,6 @@ QT_MOC_CPP = \
   qt/moc_macnotificationhandler.cpp \
   qt/moc_notificator.cpp \
   qt/moc_openuridialog.cpp \
-  qt/moc_optionsdialog.cpp \
   qt/moc_optionsmodel.cpp \
   qt/moc_peertablemodel.cpp \
   qt/moc_paymentserver.cpp \
@@ -95,6 +97,7 @@ QT_MOC_CPP = \
   qt/moc_qvaluecombobox.cpp \
   qt/moc_recentrequeststablemodel.cpp \
   qt/moc_rpcconsole.cpp \
+  qt/moc_rpcexecutor.cpp \
   qt/moc_trafficgraphwidget.cpp \
   qt/moc_transactionfilterproxy.cpp \
   qt/moc_transactiontablemodel.cpp \
@@ -139,6 +142,12 @@ QT_MOC_CPP = \
   qt/nebulaproject/moc_addresseswidget.cpp \
   qt/nebulaproject/moc_defaultdialog.cpp \
   qt/nebulaproject/moc_coldstakingwidget.cpp \
+  qt/nebulaproject/moc_proposalcard.cpp \
+  qt/nebulaproject/moc_mnselectiondialog.cpp \
+  qt/nebulaproject/moc_votedialog.cpp \
+  qt/nebulaproject/moc_createproposaldialog.cpp \
+  qt/nebulaproject/moc_proposalinfodialog.cpp \
+  qt/nebulaproject/moc_governancewidget.cpp \
   qt/nebulaproject/settings/moc_settingsbackupwallet.cpp \
   qt/nebulaproject/settings/moc_settingsexportcsv.cpp \
   qt/nebulaproject/settings/moc_settingsbittoolwidget.cpp \
@@ -147,8 +156,6 @@ QT_MOC_CPP = \
   qt/nebulaproject/settings/moc_settingsfaqwidget.cpp \
   qt/nebulaproject/settings/moc_settingsinformationwidget.cpp \
   qt/nebulaproject/settings/moc_settingsmainoptionswidget.cpp \
-  qt/nebulaproject/settings/moc_settingsmultisenddialog.cpp \
-  qt/nebulaproject/settings/moc_settingsmultisendwidget.cpp \
   qt/nebulaproject/settings/moc_settingssignmessagewidgets.cpp \
   qt/nebulaproject/settings/moc_settingswalletoptionswidget.cpp \
   qt/nebulaproject/settings/moc_settingswalletrepairwidget.cpp \
@@ -162,18 +169,12 @@ BITCOIN_MM = \
 
 QT_MOC = \
   qt/nebulaproject.moc \
-  qt/intro.moc \
-  qt/rpcconsole.moc \
-  qt/nebulaproject/settings/moc_settingsconsolewidget.cpp
+  qt/intro.moc
 
 QT_QRC_CPP = qt/qrc_nebulaproject.cpp
 QT_QRC = qt/nebulaproject.qrc
 QT_QRC_LOCALE_CPP = qt/qrc_nebulaproject_locale.cpp
 QT_QRC_LOCALE = qt/nebulaproject_locale.qrc
-
-PROTOBUF_CC = qt/paymentrequest.pb.cc
-PROTOBUF_H = qt/paymentrequest.pb.h
-PROTOBUF_PROTO = qt/paymentrequest.proto
 
 BITCOIN_QT_H = \
   qt/addressbookpage.h \
@@ -196,9 +197,7 @@ BITCOIN_QT_H = \
   qt/networkstyle.h \
   qt/notificator.h \
   qt/openuridialog.h \
-  qt/optionsdialog.h \
   qt/optionsmodel.h \
-  qt/paymentrequestplus.h \
   qt/paymentserver.h \
   qt/peertablemodel.h \
   qt/platformstyle.h \
@@ -206,6 +205,7 @@ BITCOIN_QT_H = \
   qt/qvaluecombobox.h \
   qt/recentrequeststablemodel.h \
   qt/rpcconsole.h \
+  qt/rpcexecutor.h \
   qt/trafficgraphwidget.h \
   qt/transactionfilterproxy.h \
   qt/transactionrecord.h \
@@ -261,6 +261,13 @@ BITCOIN_QT_H = \
   qt/nebulaproject/addresseswidget.h \
   qt/nebulaproject/defaultdialog.h \
   qt/nebulaproject/coldstakingwidget.h \
+  qt/nebulaproject/governancemodel.h \
+  qt/nebulaproject/proposalcard.h \
+  qt/nebulaproject/mnselectiondialog.h \
+  qt/nebulaproject/votedialog.h \
+  qt/nebulaproject/createproposaldialog.h \
+  qt/nebulaproject/proposalinfodialog.h \
+  qt/nebulaproject/governancewidget.h \
   qt/nebulaproject/settings/settingsbackupwallet.h \
   qt/nebulaproject/settings/settingsexportcsv.h \
   qt/nebulaproject/settings/settingsbittoolwidget.h \
@@ -269,8 +276,6 @@ BITCOIN_QT_H = \
   qt/nebulaproject/settings/settingsfaqwidget.h \
   qt/nebulaproject/settings/settingsinformationwidget.h \
   qt/nebulaproject/settings/settingsmainoptionswidget.h \
-  qt/nebulaproject/settings/settingsmultisenddialog.h \
-  qt/nebulaproject/settings/settingsmultisendwidget.h \
   qt/nebulaproject/settings/settingssignmessagewidgets.h \
   qt/nebulaproject/settings/settingswalletoptionswidget.h \
   qt/nebulaproject/settings/settingswalletrepairwidget.h \
@@ -434,6 +439,7 @@ RES_ICONS = \
   qt/nebulaproject/res/img/ic-switch-on.svg \
   qt/nebulaproject/res/img/img-qr-test.png \
   qt/nebulaproject/res/img/ic-check-box.svg \
+  qt/nebulaproject/res/img/ic-check-box-light.svg \
   qt/nebulaproject/res/img/ic-check-box-dark-active.svg \
   qt/nebulaproject/res/img/ic-check-box-indeterminate.svg \
   qt/nebulaproject/res/img/ic-check-box-liliac-indeterminate.svg \
@@ -498,7 +504,21 @@ RES_ICONS = \
   qt/nebulaproject/res/img/ic-information.svg \
   qt/nebulaproject/res/img/ic-information-hover.svg \
   qt/nebulaproject/res/img/ani-loading-dark.gif \
-  qt/nebulaproject/res/img/ani-loading.gif
+  qt/nebulaproject/res/img/ani-loading.gif \
+  qt/nebulaproject/res/img/ic-check-vote.svg \
+  qt/nebulaproject/res/img/ic-check-vote-active.svg \
+  qt/nebulaproject/res/img/ic-check-vote-dark.svg \
+  qt/nebulaproject/res/img/ic-check-vote-active-dark.svg \
+  qt/nebulaproject/res/img/ic-check-block.svg \
+  qt/nebulaproject/res/img/ic-filter.svg \
+  qt/nebulaproject/res/img/ic-link.svg \
+  qt/nebulaproject/res/img/ic-nav-governance.svg \
+  qt/nebulaproject/res/img/ic-nav-governance-active.svg \
+  qt/nebulaproject/res/img/ic-nav-governance-hover.svg \
+  qt/nebulaproject/res/img/ic-time.svg \
+  qt/nebulaproject/res/img/ic-link-hover.svg \
+  qt/nebulaproject/res/img/img-empty-governance.svg \
+  qt/nebulaproject/res/img/img-empty-dark-governance.svg
 
 BITCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
@@ -511,13 +531,13 @@ BITCOIN_QT_BASE_CPP = \
   qt/intro.cpp \
   qt/networkstyle.cpp \
   qt/notificator.cpp \
-  qt/optionsdialog.cpp \
   qt/optionsmodel.cpp \
   qt/peertablemodel.cpp \
   qt/platformstyle.cpp \
   qt/qvalidatedlineedit.cpp \
   qt/qvaluecombobox.cpp \
   qt/rpcconsole.cpp \
+  qt/rpcexecutor.cpp \
   qt/trafficgraphwidget.cpp \
   qt/utilitydialog.cpp
 
@@ -531,7 +551,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/coincontroltreewidget.cpp \
   qt/editaddressdialog.cpp \
   qt/openuridialog.cpp \
-  qt/paymentrequestplus.cpp \
   qt/paymentserver.cpp \
   qt/recentrequeststablemodel.cpp \
   qt/transactionfilterproxy.cpp \
@@ -583,6 +602,13 @@ BITCOIN_QT_WALLET_CPP = \
   qt/nebulaproject/addresseswidget.cpp \
   qt/nebulaproject/defaultdialog.cpp \
   qt/nebulaproject/coldstakingwidget.cpp \
+  qt/nebulaproject/governancemodel.cpp \
+  qt/nebulaproject/proposalcard.cpp \
+  qt/nebulaproject/mnselectiondialog.cpp \
+  qt/nebulaproject/votedialog.cpp \
+  qt/nebulaproject/createproposaldialog.cpp \
+  qt/nebulaproject/proposalinfodialog.cpp \
+  qt/nebulaproject/governancewidget.cpp \
   qt/nebulaproject/settings/settingsbackupwallet.cpp \
   qt/nebulaproject/settings/settingsexportcsv.cpp \
   qt/nebulaproject/settings/settingsbittoolwidget.cpp \
@@ -591,8 +617,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/nebulaproject/settings/settingsfaqwidget.cpp \
   qt/nebulaproject/settings/settingsinformationwidget.cpp \
   qt/nebulaproject/settings/settingsmainoptionswidget.cpp \
-  qt/nebulaproject/settings/settingsmultisenddialog.cpp \
-  qt/nebulaproject/settings/settingsmultisendwidget.cpp \
   qt/nebulaproject/settings/settingssignmessagewidgets.cpp \
   qt/nebulaproject/settings/settingswalletoptionswidget.cpp \
   qt/nebulaproject/settings/settingswalletrepairwidget.cpp \
@@ -626,15 +650,14 @@ BITCOIN_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
   -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
 
 qt_libbitcoinqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
-  $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
+  $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
 qt_libbitcoinqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 qt_libbitcoinqt_a_OBJCXXFLAGS = $(AM_OBJCXXFLAGS) $(QT_PIE_FLAGS)
 
 qt_libbitcoinqt_a_SOURCES = $(BITCOIN_QT_CPP) $(BITCOIN_QT_H) $(QT_FORMS_UI) \
-  $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS)
+  $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS)
 
-nodist_qt_libbitcoinqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
-  $(PROTOBUF_H) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
+nodist_qt_libbitcoinqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
 
 # forms/foo.h -> forms/ui_foo.h
 QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:.ui=.h))))
@@ -644,14 +667,9 @@ QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:
 $(QT_MOC): $(QT_FORMS_H)
 $(qt_libbitcoinqt_a_OBJECTS) $(qt_nebulaproject_qt_OBJECTS) : | $(QT_MOC)
 
-#Generating these with a half-written protobuf header leads to wacky results.
-#This makes sure it's done.
-$(QT_MOC): $(PROTOBUF_H)
-$(QT_MOC_CPP): $(PROTOBUF_H)
-
 # nebulaproject-qt binary #
 qt_nebulaproject_qt_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
-  $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
+  $(QT_INCLUDES) $(QR_CFLAGS) $(SVG_CFLAGS) $(CHARTS_CFLAGS)
 qt_nebulaproject_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
 qt_nebulaproject_qt_SOURCES = qt/nebulaproject.cpp
@@ -669,8 +687,8 @@ if ENABLE_ZMQ
 qt_nebulaproject_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
 qt_nebulaproject_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBBITCOIN_ZEROCOIN) $(LIBSAPLING) $(LIBRUSTZCASH) $(LIBZCASH_LIBS) $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) \
-  $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(SVG_LIBS) $(CHARTS_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
-  $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
+  $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(SVG_LIBS) $(CHARTS_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(NATPMP_LIBS) $(LIBSECP256K1) \
+  $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(BLS_LIBS)
 qt_nebulaproject_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 qt_nebulaproject_qt_LIBTOOLFLAGS = $(AM_LIBTOOLFLAGS) --tag CXX
 
@@ -681,7 +699,7 @@ SECONDARY: $(QT_QM)
 
 $(srcdir)/qt/nebulaprojectstrings.cpp: $(libbitcoin_server_a_SOURCES) $(libbitcoin_wallet_a_SOURCES) $(libbitcoin_common_a_SOURCES) $(libbitcoin_zmq_a_SOURCES) $(libbitcoin_util_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
-	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) PACKAGE_NAME="$(PACKAGE_NAME)" $(PYTHON) ../share/qt/extract_strings_qt.py $^
+	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) $(PYTHON) ../share/qt/extract_strings_qt.py $^
 
 translate: $(srcdir)/qt/nebulaprojectstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(BITCOIN_QT_BASE_CPP) qt/nebulaproject.cpp $(BITCOIN_QT_WINDOWS_CPP) $(BITCOIN_QT_WALLET_CPP) $(BITCOIN_QT_H) $(BITCOIN_MM)
 	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
@@ -694,7 +712,7 @@ $(QT_QRC_LOCALE_CPP): $(QT_QRC_LOCALE) $(QT_QM)
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 	@rm $(@D)/temp_$(<F)
 
-$(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS) $(PROTOBUF_H)
+$(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS)
 	@test -f $(RCC)
 	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name nebulaproject $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@

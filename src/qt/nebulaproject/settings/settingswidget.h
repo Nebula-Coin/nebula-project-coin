@@ -15,7 +15,6 @@
 #include "qt/nebulaproject/settings/settingswalletoptionswidget.h"
 #include "qt/nebulaproject/settings/settingsmainoptionswidget.h"
 #include "qt/nebulaproject/settings/settingsdisplayoptionswidget.h"
-#include "qt/nebulaproject/settings/settingsmultisendwidget.h"
 #include "qt/nebulaproject/settings/settingsinformationwidget.h"
 #include "qt/nebulaproject/settings/settingsconsolewidget.h"
 
@@ -57,7 +56,6 @@ private Q_SLOTS:
     // Wallet Configuration
     void onConfigurationClicked();
     void onBipToolClicked();
-    void onMultisendClicked();
     void onExportCSVClicked();
 
     // Options
@@ -92,7 +90,6 @@ private:
     SettingsWalletOptionsWidget *settingsWalletOptionsWidget{nullptr};
     SettingsMainOptionsWidget *settingsMainOptionsWidget{nullptr};
     SettingsDisplayOptionsWidget *settingsDisplayOptionsWidget{nullptr};
-    SettingsMultisendWidget *settingsMultisendWidget{nullptr};
     SettingsInformationWidget *settingsInformationWidget{nullptr};
     SettingsConsoleWidget *settingsConsoleWidget{nullptr};
 

@@ -7,13 +7,11 @@
 
 #include "qt/nebulaproject/pwidget.h"
 #include "addresstablemodel.h"
-#include "qt/nebulaproject/tooltipmenu.h"
 #include "furabstractlistitemdelegate.h"
-#include "qt/nebulaproject/addressfilterproxymodel.h"
 
 #include <QWidget>
 
-class AddressViewDelegate;
+class AddressFilterProxyModel;
 class TooltipMenu;
 class NEBULAPROJECTGUI;
 class WalletModel;
@@ -35,7 +33,6 @@ public:
     ~AddressesWidget();
 
     void loadWalletModel() override;
-    void onNewContactClicked();
 
 private Q_SLOTS:
     void handleAddressClicked(const QModelIndex &index);
@@ -55,7 +52,6 @@ private:
     AddressTableModel* addressTablemodel = nullptr;
     AddressFilterProxyModel *filter = nullptr;
 
-    bool isOnMyAddresses = true;
     TooltipMenu* menu = nullptr;
 
     // Cached index

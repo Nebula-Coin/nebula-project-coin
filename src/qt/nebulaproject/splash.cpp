@@ -2,15 +2,19 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#if defined(HAVE_CONFIG_H)
+#include "config/nebulaproject-config.h"
+#endif
+
 #include "qt/nebulaproject/splash.h"
 #include "qt/nebulaproject/forms/ui_splash.h"
 #include "QFile"
 
 #include "interfaces/handler.h"
-#include "init.h"
 #include "guiinterface.h"
 #include "networkstyle.h"
-#include "util.h"
+#include "shutdown.h"
+#include "util/system.h"
 #include "version.h"
 #include "guiutil.h"
 
@@ -28,7 +32,7 @@ Splash::Splash(const NetworkStyle* networkStyle) :
     QWidget(nullptr), ui(new Ui::Splash)
 {
     ui->setupUi(this);
-    QString titleText = tr("NEBULAPROJECT Core");
+    QString titleText = PACKAGE_NAME;
     QString titleAddText = networkStyle->getTitleAddText();
     setWindowTitle(titleText + " " + titleAddText);
 
@@ -97,10 +101,8 @@ void Splash::unsubscribeFromCoreSignals(){
     m_handler_init_message->disconnect();
     m_handler_show_progress->disconnect();
 #ifdef ENABLE_WALLET
-    if (pwalletMain) {
-        m_handler_load_wallet->disconnect();
-        if (m_handler_show_progress_wallet) m_handler_show_progress_wallet->disconnect();
-    }
+    m_handler_load_wallet->disconnect();
+    if (m_handler_show_progress_wallet) m_handler_show_progress_wallet->disconnect();
 #endif
 }
 

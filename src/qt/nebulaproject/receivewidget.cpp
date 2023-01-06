@@ -8,11 +8,9 @@
 #include "qt/nebulaproject/addnewcontactdialog.h"
 #include "qt/nebulaproject/qtutils.h"
 #include "qt/nebulaproject/myaddressrow.h"
-#include "qt/nebulaproject/furlistrow.h"
 #include "qt/nebulaproject/addressholder.h"
 #include "walletmodel.h"
 #include "guiutil.h"
-#include "pairresult.h"
 
 #include <QModelIndex>
 #include <QColor>
@@ -91,6 +89,10 @@ ReceiveWidget::ReceiveWidget(NEBULAPROJECTGUI* parent) :
     ui->container_right->addItem(spacer);
     ui->listViewAddress->setVisible(false);
 
+    // My Address search filter
+    initCssEditLine(ui->lineEditFilter, true);
+    ui->lineEditFilter->setStyleSheet("font: 14px;");
+
     // Sort Controls
     SortEdit* lineEdit = new SortEdit(ui->comboBoxSort);
     connect(lineEdit, &SortEdit::Mouse_Pressed, [this](){ui->comboBoxSort->showPopup();});
@@ -108,6 +110,7 @@ ReceiveWidget::ReceiveWidget(NEBULAPROJECTGUI* parent) :
     connect(ui->listViewAddress, &QListView::clicked, this, &ReceiveWidget::handleAddressClicked);
     connect(ui->btnRequest, &OptionButton::clicked, this, &ReceiveWidget::onRequestClicked);
     connect(ui->btnMyAddresses, &OptionButton::clicked, this, &ReceiveWidget::onMyAddressesClicked);
+    connect(ui->lineEditFilter, &QLineEdit::textChanged, this, &ReceiveWidget::filterChanged);
 
     ui->pushLeft->setChecked(true);
     connect(ui->pushLeft, &QPushButton::clicked, [this](){onTransparentSelected(true);});
@@ -141,11 +144,10 @@ void ReceiveWidget::refreshView(const QModelIndex& tl, const QModelIndex& br)
     return refreshView(index.data(Qt::DisplayRole).toString());
 }
 
-void ReceiveWidget::refreshView(QString refreshAddress)
+void ReceiveWidget::refreshView(const QString& refreshAddress)
 {
     try {
-        QString latestAddress = (refreshAddress.isEmpty()) ? this->addressTableModel->getAddressToShow(shieldedMode) : refreshAddress;
-
+        const QString& latestAddress = (refreshAddress.isEmpty()) ? addressTableModel->getAddressToShow(shieldedMode) : refreshAddress;
         if (latestAddress.isEmpty()) {
             // Check for generation errors
             ui->labelQrImg->setText(tr("No available address\ntry unlocking the wallet"));
@@ -185,7 +187,7 @@ void ReceiveWidget::updateLabel()
     }
 }
 
-void ReceiveWidget::updateQr(QString& address)
+void ReceiveWidget::updateQr(const QString& address)
 {
     info->address = address;
     QString uri = GUIUtil::formatBitcoinURI(*info);
@@ -195,8 +197,7 @@ void ReceiveWidget::updateQr(QString& address)
     QColor qrColor("#382d4d");
     QPixmap pixmap = encodeToQr(uri, error, qrColor);
     if (!pixmap.isNull()) {
-        qrImage = &pixmap;
-        ui->labelQrImg->setPixmap(qrImage->scaled(ui->labelQrImg->width(), ui->labelQrImg->height()));
+        ui->labelQrImg->setPixmap(pixmap.scaled(ui->labelQrImg->width(), ui->labelQrImg->height()));
     } else {
         ui->labelQrImg->setText(!error.isEmpty() ? error : "Error encoding address");
     }
@@ -232,6 +233,7 @@ void ReceiveWidget::onLabelClicked()
                 inform(tr("Error storing address label"));
             }
         }
+        dialog->deleteLater();
         isShowingDialog = false;
     }
 }
@@ -246,23 +248,16 @@ void ReceiveWidget::onNewAddressClicked()
             return;
         }
 
-        QString strAddress;
-        PairResult r(false);
-        if (!shieldedMode) {
-            Destination address;
-            r = walletModel->getNewAddress(address, "");
-            strAddress = QString::fromStdString(address.ToString());
-        } else {
-            r = walletModel->getNewShieldedAddress(strAddress, "");
-        }
+        CallResult<Destination> r = !shieldedMode ? walletModel->getNewAddress("") :
+                walletModel->getNewShieldedAddress("");
 
         // Check validity
-        if (!r.result) {
-            inform(r.status->c_str());
+        if (!r) {
+            inform(r.getError().c_str());
             return;
         }
 
-        refreshView(strAddress);
+        refreshView(QString::fromStdString(r.getObjResult()->ToString()));
         inform(tr("New address created"));
     } catch (const std::runtime_error& error) {
         // Error generating address
@@ -334,6 +329,11 @@ void ReceiveWidget::onSortOrderChanged(int idx)
 {
     sortOrder = (Qt::SortOrder) ui->comboBoxSortOrder->itemData(idx).toInt();
     sortAddresses();
+}
+
+void ReceiveWidget::filterChanged(const QString& str)
+{
+    this->filter->setFilterRegExp(str);
 }
 
 void ReceiveWidget::sortAddresses()

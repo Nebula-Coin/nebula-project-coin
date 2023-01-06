@@ -7,8 +7,8 @@
 #ifndef NEBULAPROJECT_KEY_H
 #define NEBULAPROJECT_KEY_H
 
-#include "allocators.h"
 #include "serialize.h"
+#include "support/allocators/secure.h"
 #include "uint256.h"
 #include "pubkey.h"
 
@@ -20,7 +20,6 @@ class CPubKey;
 struct CExtPubKey;
 
 /**
- * secure_allocator is defined in allocators.h
  * CPrivKey is a serialized private key, with all parameters included
  * (PRIVATE_KEY_SIZE bytes)
  */
@@ -98,16 +97,13 @@ public:
     //! Check whether the public key corresponding to this private key is (to be) compressed.
     bool IsCompressed() const { return fCompressed; }
 
-    //! Initialize from a CPrivKey (serialized OpenSSL private key data).
-    bool SetPrivKey(const CPrivKey& vchPrivKey, bool fCompressed);
-
     //! Generate a new private key using a cryptographic PRNG.
     void MakeNewKey(bool fCompressed);
 
     uint256 GetPrivKey_256();
 
     /**
-     * Convert the private key to a CPrivKey (serialized OpenSSL private key data).
+     * Convert the private key to a CPrivKey (serialized secp256k1 private key data).
      * This is expensive.
      */
     CPrivKey GetPrivKey() const;

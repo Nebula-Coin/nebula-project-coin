@@ -10,7 +10,7 @@
 #include "guiutil.h"
 #include "walletmodel.h"
 
-#include "base58.h"
+#include "key_io.h"
 #include "wallet/wallet.h"
 #include "askpassphrasedialog.h"
 
@@ -132,7 +132,7 @@ static QString translateTypeToString(AddressTableEntry::Type type)
 class AddressTablePriv
 {
 public:
-    CWallet* wallet;
+    CWallet* wallet{nullptr};
     QList<AddressTableEntry> cachedAddressTable;
     int sendNum = 0;
     int recvNum = 0;
@@ -298,8 +298,9 @@ public:
     int sizeSend() { return sendNum; }
     int sizeRecv() { return recvNum; }
     int sizeDell() { return dellNum; }
-    int SizeColdSend() { return coldSendNum; }
+    int sizeColdSend() { return coldSendNum; }
     int sizeShieldedSend() { return shieldedSendNum; }
+    int sizeSendAll() { return sizeSend() + sizeColdSend() + sizeShieldedSend(); }
 
     AddressTableEntry* index(int idx)
     {
@@ -338,8 +339,9 @@ int AddressTableModel::columnCount(const QModelIndex& parent) const
 int AddressTableModel::sizeSend() const { return priv->sizeSend(); }
 int AddressTableModel::sizeRecv() const { return priv->sizeRecv(); }
 int AddressTableModel::sizeDell() const { return priv->sizeDell(); }
-int AddressTableModel::sizeColdSend() const { return priv->SizeColdSend(); }
+int AddressTableModel::sizeColdSend() const { return priv->sizeColdSend(); }
 int AddressTableModel::sizeShieldedSend() const { return priv->sizeShieldedSend(); }
+int AddressTableModel::sizeSendAll() const { return priv->sizeSendAll(); }
 
 QVariant AddressTableModel::data(const QModelIndex& index, int role) const
 {
@@ -631,18 +633,9 @@ QString AddressTableModel::getAddressToShow(bool isShielded) const
     }
 
     // For some reason we don't have any address in our address book, let's create one
-    PairResult res(false);
-    QString addressStr;
-    if (!isShielded) {
-        Destination newAddress;
-        res = walletModel->getNewAddress(newAddress, "Default");
-        if (res.result) {
-            addressStr = QString::fromStdString(newAddress.ToString());
-        }
-    } else {
-        res = walletModel->getNewShieldedAddress(addressStr, "default shielded");
-    }
-    return addressStr;
+    CallResult<Destination> res = !isShielded ? walletModel->getNewAddress("Default") :
+            walletModel->getNewShieldedAddress("default shielded");
+    return (res) ? QString::fromStdString(res.getObjResult()->ToString()) : "";;
 }
 
 void AddressTableModel::emitDataChanged(int idx)

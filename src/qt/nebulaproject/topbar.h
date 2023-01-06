@@ -6,6 +6,7 @@
 #define TOPBAR_H
 
 #include <QWidget>
+#include "qt/askpassphrasedialog.h"
 #include "qt/nebulaproject/pwidget.h"
 #include "qt/nebulaproject/lockunlock.h"
 #include "amount.h"
@@ -50,12 +51,13 @@ public Q_SLOTS:
     void setNumBlocks(int count);
     void setStakingStatusActive(bool fActive);
     void updateStakingStatus();
-    void updateHDState(const bool& upgraded, const QString& upgradeError);
+    void updateHDState(const bool upgraded, const QString& upgradeError);
     void showUpgradeDialog(const QString& message);
 
 Q_SIGNALS:
     void themeChanged(bool isLight);
     void walletSynced(bool isSync);
+    void tierTwoSynced(bool isSync);
     void onShowHideColdStakingChanged(bool show);
 
 protected:
