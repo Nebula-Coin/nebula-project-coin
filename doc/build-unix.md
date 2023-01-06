@@ -8,7 +8,7 @@ Always use absolute paths to configure and compile NEBULAPROJECT Core and the de
 For example, when specifying the path of the dependency:
 
 	../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
-
+	
 Here BDB_PREFIX must be an absolute path - it is defined using $(pwd) which ensures
 the usage of the absolute path.
 
@@ -80,7 +80,7 @@ BerkeleyDB is required for the wallet.
  You can add the repository using the following command:
 
     sudo apt-get install software-properties-common
-    sudo add-apt-repository ppa:nebulaproject/nebulaproject
+    sudo add-apt-repository ppa:pivx/pivx
     sudo apt-get update
     sudo apt-get install libdb4.8-dev libdb4.8++-dev
 
