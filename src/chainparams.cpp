@@ -70,15 +70,21 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
  * + Contains no strange transactions
  */
 static MapCheckpoints mapCheckpoints = {
-   {0, uint256S("0x001")},
+    { 0, uint256S("00000784a1da73a185e3e3160c9515007690dd8b560b7aae7e8fdf8ddc0974ab")},
+    { 100, uint256S("000001f250fb375fe151b528ae73b8a7b91ea723b24eb8de131be011d2785e53")},
+    { 292, uint256S("0000002048799eea0ffc4d87562528628025c2ace07d37301c945be8cbb8d649")},
+    { 500, uint256S("0000025fa88025762927e7380a7cb4f632c30fd264105c195ba7cf9e45cdf576")},
+    { 5500, uint256S("ba4635271806167ec7b2f16f58b57e6c5e5c0431615a64caeb61f832f4f58df6")},
+    { 14000, uint256S("e7b5fc5afa3be42f5a3855d25be2482edf4f7d0be4e369304caf4efb38eac448")},
+    { 21843, uint256S("8e1fe36b336473c217bfe3c8401d26a4acbea8d6e6bcf9daefbeb6b0388fbc4f")},
 };
 
 static const CCheckpointData data = {
     &mapCheckpoints,
-    1591401645, // * UNIX timestamp of last checkpoint block
-    5607713,    // * total number of transactions between genesis and last checkpoint
+    1674159120, // * UNIX timestamp of last checkpoint block
+    55911,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the UpdateTip debug.log lines)
-    3000        // * estimated number of transactions per day after checkpoint
+    1400        // * estimated number of transactions per day after checkpoint
 };
 
 static MapCheckpoints mapCheckpointsTestnet = {
@@ -186,15 +192,16 @@ public:
                 uint256S("0x5b2482eca24caf2a46bb22e0545db7b7037282733faa3a42ec20542509999a64");
         consensus.vUpgrades[Consensus::UPGRADE_ZC_V2].hashActivationBlock =
                 uint256S("0x37ea75fe1c9314171cff429a91b25b9f11331076d1c9de50ee4054d61877f8af");
-        consensus.vUpgrades[Consensus::UPGRADE_BIP65].hashActivationBlock =
-                uint256S("0x82629b7a9978f5c7ea3f70a12db92633a7d2e436711500db28b97efd48b1e527");
-        consensus.vUpgrades[Consensus::UPGRADE_ZC_PUBLIC].hashActivationBlock =
+		consensus.vUpgrades[Consensus::UPGRADE_ZC_PUBLIC].hashActivationBlock =
                 uint256S("0xe2448b76d88d37aba4194ffed1041b680d779919157ddf5cbf423373d7f8078e");
+		**/
+        consensus.vUpgrades[Consensus::UPGRADE_BIP65].hashActivationBlock =
+                uint256S("2c43be448ab408e249d5cb09fc232564933999afdc21a3190f327993134f1e2f");
         consensus.vUpgrades[Consensus::UPGRADE_V3_4].hashActivationBlock =
-                uint256S("0x0ef2556e40f3b9f6e02ce611b832e0bbfe7734a8ea751c7b555310ee49b61456");
+                uint256S("657eb6beb50bead73e13671ced1544ac1b03f8bbbd002ef25a43a56313b92765");
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].hashActivationBlock =
-                uint256S("0x14e477e597d24549cac5e59d97d32155e6ec2861c1003b42d0566f9bf39b65d5");
-        **/
+                uint256S("46c41f8ad3cdbd3e06acddc88ef45934cf7bbedd62e8d06db84c83b6ef2e79ef");
+      
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
