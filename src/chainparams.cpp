@@ -196,11 +196,11 @@ public:
                 uint256S("0xe2448b76d88d37aba4194ffed1041b680d779919157ddf5cbf423373d7f8078e");
 		**/
         consensus.vUpgrades[Consensus::UPGRADE_BIP65].hashActivationBlock =
-                uint256S("2c43be448ab408e249d5cb09fc232564933999afdc21a3190f327993134f1e2f");
+                uint256S("0x2c43be448ab408e249d5cb09fc232564933999afdc21a3190f327993134f1e2f");
         consensus.vUpgrades[Consensus::UPGRADE_V3_4].hashActivationBlock =
-                uint256S("657eb6beb50bead73e13671ced1544ac1b03f8bbbd002ef25a43a56313b92765");
+                uint256S("0x657eb6beb50bead73e13671ced1544ac1b03f8bbbd002ef25a43a56313b92765");
         consensus.vUpgrades[Consensus::UPGRADE_V4_0].hashActivationBlock =
-                uint256S("46c41f8ad3cdbd3e06acddc88ef45934cf7bbedd62e8d06db84c83b6ef2e79ef");
+                uint256S("0x46c41f8ad3cdbd3e06acddc88ef45934cf7bbedd62e8d06db84c83b6ef2e79ef");
       
         /**
          * The message start string is designed to be unlikely to occur in normal data.
