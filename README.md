@@ -15,14 +15,14 @@ NEBULAPROJECT is an open source community-driven cryptocurrency, focused on five
 
 (5) Ease of Use: NEBULAPROJECT is determined to offer the best possible graphical interface for a core node/wallet. A full featured graphical product for new and advanced users.
 
-A lot more information and specs at [NEBULAPROJECT.org](https://www.nebulaproject.org/). Join the community at [NEBULAPROJECT Discord](https://discordapp.com/invite/jzqVsJd).
+A lot more information and specs at [nebulaproject.io](https://www.nebulaproject.io/). Join the community at [NEBULAPROJECT Discord](https://discord.nebulaproject.io).
 
 ## License
 NEBULAPROJECT Core is released under the terms of the MIT license. See [COPYING](https://github.com/Nebula-Coin/nebula-project-coin/blob/master/COPYING) for more information or see https://opensource.org/licenses/MIT.
 
 ## Development Process
 
-The master branch is regularly built (see doc/build-*.md for instructions) and tested, but it is not guaranteed to be completely stable. [Tags](https://github.com/Nebula-Project/nebula-project/tags) are created regularly from release branches to indicate new official, stable release versions of NEBULAPROJECT Core.
+The master branch is regularly built (see doc/build-*.md for instructions) and tested, but it is not guaranteed to be completely stable. [Tags](https://github.com/Nebula-Coin/nebula-project-coin/tags) are created regularly from release branches to indicate new official, stable release versions of NEBULAPROJECT Core.
 
 The contribution workflow is described in [CONTRIBUTING.md](https://github.com/Nebula-Coin/nebula-project-coin/blob/master/CONTRIBUTING.md) and useful hints for developers can be found in [doc/developer-notes.md](https://github.com/Nebula-Coin/nebula-project-coin/blob/master/doc/developer-notes.md).
 
