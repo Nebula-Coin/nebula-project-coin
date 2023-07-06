@@ -611,7 +611,7 @@ int NEBULAPROJECTGUI::getNavWidth()
 void NEBULAPROJECTGUI::openFAQ(SettingsFaqWidget::Section section)
 {
     showHide(true);
-    SettingsFaqWidget* dialog = new SettingsFaqWidget(this, clientModel);
+    SettingsFaqWidget* dialog = new SettingsFaqWidget(this, mnModel);
     dialog->setSection(section);
     openDialogWithOpaqueBackgroundFullScreen(dialog, this);
     dialog->deleteLater();
@@ -625,9 +625,10 @@ void NEBULAPROJECTGUI::setGovModel(GovernanceModel* govModel)
     governancewidget->setGovModel(govModel);
 }
 
-void NEBULAPROJECTGUI::setMNModel(MNModel* mnModel)
+void NEBULAPROJECTGUI::setMNModel(MNModel* _mnModel)
 {
     if (!stackedContainer || !clientModel) return;
+    mnModel = _mnModel;
     governancewidget->setMNModel(mnModel);
     masterNodesWidget->setMNModel(mnModel);
 }

@@ -58,7 +58,8 @@ bool TransactionRecord::decomposeCoinStake(const CWallet* wallet, const CWalletT
             sub.address = EncodeDestination(destMN);
             sub.credit = wtx.tx->vout[nIndexMN].nValue;
             // Simple way to differentiate budget payments from MN rewards.
-            CAmount mn_reward = GetMasternodePayment();
+            int nHeight = wtx.m_confirm.block_height;
+            CAmount mn_reward = GetMasternodePayment(nHeight);
             sub.type = sub.credit > mn_reward ? TransactionRecord::BudgetPayment : TransactionRecord::MNReward;
         }
     }

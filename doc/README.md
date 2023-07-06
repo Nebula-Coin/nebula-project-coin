@@ -30,7 +30,7 @@ Drag NEBULAPROJECT-Qt to your applications folder, and then run NEBULAPROJECT-Qt
 
 * See the documentation at the [NEBULAPROJECT Wiki](https://github.com/Nebula-Project/nebula-project/wiki)
 for help and more information.
-* Ask for help on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or on the [NEBULAPROJECT Forum](http://forum.nebulaproject.org/).
+* Ask for help on the [NEBULAPROJECT Forum](http://forum.nebulaproject.org/).
 * Join our Discord server [Discord Server](https://discord.nebulaproject.io)
 
 Building
@@ -58,11 +58,10 @@ The NEBULAPROJECT repo's [root README](/README.md) contains relevant information
 - [Dnsseed Policy](dnsseed-policy.md)
 
 ### Resources
-* Discuss on the [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or the [NEBULAPROJECT](http://forum.nebulaproject.org/) forum.
+* Discuss on the [NEBULAPROJECT](http://forum.nebulaproject.org/) forum.
 * Join the [NEBULAPROJECT Discord](https://discord.nebulaproject.io).
 
 ### Miscellaneous
-- [Assets Attribution](assets-attribution.md)
 - [Files](files.md)
 - [Fuzz-testing](fuzzing.md)
 - [Reduce Memory](reduce-memory.md)

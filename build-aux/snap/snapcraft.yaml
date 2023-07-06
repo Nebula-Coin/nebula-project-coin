@@ -2,7 +2,7 @@
 # Copyright (c) 2019 The PIVX developers
 name: nebulaproject-core
 base: core18
-version: 5.4.0
+version: 5.4.99
 summary:   NEBULAPROJECT (Private – Instant – Verified – Transaction)
 description: |
   NEBULAPROJECT is an MIT licensed,

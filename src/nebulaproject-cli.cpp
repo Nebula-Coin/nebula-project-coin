@@ -101,7 +101,7 @@ static bool AppInitRPC(int argc, char* argv[])
         fprintf(stdout, "%s", strUsage.c_str());
         return false;
     }
-    if (!fs::is_directory(GetDataDir(false))) {
+    if (!CheckDataDirOption()) {
         fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "").c_str());
         return false;
     }
@@ -140,7 +140,7 @@ struct HTTPReply
 const char *http_errorstring(int code)
 {
     switch(code) {
-		#if LIBEVENT_VERSION_NUMBER >= 0x02010300
+#if LIBEVENT_VERSION_NUMBER >= 0x02010300
         case EVREQ_HTTP_TIMEOUT:
             return "timeout reached";
         case EVREQ_HTTP_EOF:
@@ -153,7 +153,7 @@ const char *http_errorstring(int code)
             return "request was canceled";
         case EVREQ_HTTP_DATA_TOO_LONG:
             return "response body is larger than allowed";
-		#endif
+#endif
         default:
             return "unknown";
     }
@@ -208,10 +208,10 @@ UniValue CallRPC(const std::string& strMethod, const UniValue& params)
     raii_evhttp_request req = obtain_evhttp_request(http_request_done, (void*)&response);
     if (req == NULL)
         throw std::runtime_error("create http request failed");
-	#if LIBEVENT_VERSION_NUMBER >= 0x02010300
+#if LIBEVENT_VERSION_NUMBER >= 0x02010300
     evhttp_request_set_error_cb(req.get(), http_error_cb);
-	#endif
-	
+#endif
+
     // Get credentials
     std::string strRPCUserColonPass;
     if (gArgs.GetArg("-rpcpassword", "") == "") {

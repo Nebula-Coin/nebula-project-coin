@@ -99,7 +99,6 @@ class ScriptPubKeyMan;
 class SaplingScriptPubKeyMan;
 class SaplingNoteData;
 struct SaplingNoteEntry;
-class CDeterministicMNList;
 
 /** (client) version numbers for particular wallet features */
 enum WalletFeature {
@@ -564,7 +563,7 @@ public:
     bool IsCoinStake() const { return tx->IsCoinStake(); }
 
     /** Pass this transaction to the mempool. Fails if absolute fee exceeds absurd fee. */
-    bool AcceptToMemoryPool(CValidationState& state);
+    bool AcceptToMemoryPool(CValidationState& state) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 };
 
 
@@ -852,10 +851,11 @@ public:
     std::map<libzcash::SaplingPaymentAddress, std::vector<SaplingNoteEntry>> ListNotes() const;
 
     /// Get 10000 NBLA output and keys which can be used for the Masternode
-    bool GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet,
-            CKey& keyRet, std::string strTxHash, std::string strOutputIndex, std::string& strError);
-    /// Extract txin information and keys from output
-    bool GetVinAndKeysFromOutput(COutput out, CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet, bool fColdStake = false);
+    bool GetMasternodeVinAndKeys(CPubKey& pubKeyRet,
+                                 CKey& keyRet,
+                                 const COutPoint& collateralOut,
+                                 bool fValidateCollateral,
+                                 std::string& strError);
 
     bool IsSpent(const COutPoint& outpoint) const;
     bool IsSpent(const uint256& hash, unsigned int n) const;
@@ -886,13 +886,11 @@ public:
      *  -- If ptx is null, c is the output of a transaction in mapWallet
      */
     void LockOutpointIfMine(const CTransactionRef& ptx, const COutPoint& c);
-
     /*
-     *  Locks cs_wallet
-     *  Called during Init. If a DMN collateral is found in the wallet,
-     *  lock the corresponding coin, to prevent accidental spending.
+     * Same functionality as above but locking the cs_wallet mutex internally.
+     * future: add capability to lock the mutex from outside of this class without exposing it.
      */
-    void ScanMasternodeCollateralsAndLock(const CDeterministicMNList& mnList);
+    void LockOutpointIfMineWithMutex(const CTransactionRef& ptx, const COutPoint& c);
 
     /*
      *  Requires cs_wallet lock.
@@ -929,6 +927,9 @@ public:
 
     //! pindex is the old tip being disconnected.
     void DecrementNoteWitnesses(const CBlockIndex* pindex);
+
+    //! clear note witness cache
+    void ClearNoteWitnessCache();
 
 
     //! Adds Sapling spending key to the store, and saves it to disk
@@ -1001,7 +1002,7 @@ public:
     bool EncryptWallet(const SecureString& strWalletPassphrase);
 
     std::vector<CKeyID> GetAffectedKeys(const CScript& spk);
-    void GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const;
+    void GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
     /**
      * Increment the next transaction order id
@@ -1095,6 +1096,8 @@ public:
     };
     CWallet::CommitResult CommitTransaction(CTransactionRef tx, CReserveKey& opReservekey, CConnman* connman);
     CWallet::CommitResult CommitTransaction(CTransactionRef tx, CReserveKey* reservekey, CConnman* connman, mapValue_t* extraValues=nullptr);
+
+    bool CreateCoinstakeOuts(const CNblaStake& stakeInput, std::vector<CTxOut>& vout, CAmount nTotal) const;
     bool CreateCoinStake(const CBlockIndex* pindexPrev,
                          unsigned int nBits,
                          CMutableTransaction& txNew,
@@ -1122,7 +1125,7 @@ public:
 
     std::set<CTxDestination> GetLabelAddresses(const std::string& label) const;
 
-    bool CreateBudgetFeeTX(CTransactionRef& tx, const uint256& hash, CReserveKey& keyChange, bool fFinalization);
+    bool CreateBudgetFeeTX(CTransactionRef& tx, const uint256& hash, CReserveKey& keyChange, CAmount fee);
 
     bool IsUsed(const CTxDestination address) const;
 

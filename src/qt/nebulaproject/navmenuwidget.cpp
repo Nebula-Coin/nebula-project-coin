@@ -4,7 +4,6 @@
 
 #include "qt/nebulaproject/navmenuwidget.h"
 #include "qt/nebulaproject/forms/ui_navmenuwidget.h"
-#include "qt/nebulaproject/nebulaprojectgui.h"
 #include "qt/nebulaproject/qtutils.h"
 #include "clientversion.h"
 #include "optionsmodel.h"

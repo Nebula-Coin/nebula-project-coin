@@ -5,7 +5,6 @@
 #include "qt/nebulaproject/tooltipmenu.h"
 #include "qt/nebulaproject/forms/ui_tooltipmenu.h"
 
-#include "qt/nebulaproject/nebulaprojectgui.h"
 #include "qt/nebulaproject/qtutils.h"
 #include <QTimer>
 

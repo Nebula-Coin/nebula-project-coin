@@ -42,7 +42,6 @@ QT_FORMS_UI = \
   qt/nebulaproject/forms/sendcustomfeedialog.ui \
   qt/nebulaproject/forms/sendmultirow.ui \
   qt/nebulaproject/forms/send.ui \
-  qt/nebulaproject/forms/addnewaddressdialog.ui \
   qt/nebulaproject/forms/addnewcontactdialog.ui \
   qt/nebulaproject/forms/requestdialog.ui \
   qt/nebulaproject/forms/receivewidget.ui \
@@ -95,7 +94,6 @@ QT_MOC_CPP = \
   qt/moc_paymentserver.cpp \
   qt/moc_qvalidatedlineedit.cpp \
   qt/moc_qvaluecombobox.cpp \
-  qt/moc_recentrequeststablemodel.cpp \
   qt/moc_rpcconsole.cpp \
   qt/moc_rpcexecutor.cpp \
   qt/moc_trafficgraphwidget.cpp \
@@ -134,7 +132,6 @@ QT_MOC_CPP = \
   qt/nebulaproject/moc_sendmemodialog.cpp \
   qt/nebulaproject/moc_sendmultirow.cpp \
   qt/nebulaproject/moc_send.cpp \
-  qt/nebulaproject/moc_addnewaddressdialog.cpp \
   qt/nebulaproject/moc_addnewcontactdialog.cpp \
   qt/nebulaproject/moc_requestdialog.cpp \
   qt/nebulaproject/moc_receivewidget.cpp \
@@ -200,10 +197,8 @@ BITCOIN_QT_H = \
   qt/optionsmodel.h \
   qt/paymentserver.h \
   qt/peertablemodel.h \
-  qt/platformstyle.h \
   qt/qvalidatedlineedit.h \
   qt/qvaluecombobox.h \
-  qt/recentrequeststablemodel.h \
   qt/rpcconsole.h \
   qt/rpcexecutor.h \
   qt/trafficgraphwidget.h \
@@ -253,7 +248,6 @@ BITCOIN_QT_H = \
   qt/nebulaproject/sendmemodialog.h \
   qt/nebulaproject/sendmultirow.h \
   qt/nebulaproject/send.h \
-  qt/nebulaproject/addnewaddressdialog.h \
   qt/nebulaproject/addnewcontactdialog.h \
   qt/nebulaproject/requestdialog.h \
   qt/nebulaproject/receivewidget.h \
@@ -533,7 +527,6 @@ BITCOIN_QT_BASE_CPP = \
   qt/notificator.cpp \
   qt/optionsmodel.cpp \
   qt/peertablemodel.cpp \
-  qt/platformstyle.cpp \
   qt/qvalidatedlineedit.cpp \
   qt/qvaluecombobox.cpp \
   qt/rpcconsole.cpp \
@@ -552,7 +545,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/editaddressdialog.cpp \
   qt/openuridialog.cpp \
   qt/paymentserver.cpp \
-  qt/recentrequeststablemodel.cpp \
   qt/transactionfilterproxy.cpp \
   qt/transactionrecord.cpp \
   qt/transactiontablemodel.cpp \
@@ -594,7 +586,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/nebulaproject/sendmemodialog.cpp \
   qt/nebulaproject/sendmultirow.cpp \
   qt/nebulaproject/send.cpp \
-  qt/nebulaproject/addnewaddressdialog.cpp \
   qt/nebulaproject/addnewcontactdialog.cpp \
   qt/nebulaproject/requestdialog.cpp \
   qt/nebulaproject/receivewidget.cpp \

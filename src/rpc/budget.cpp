@@ -14,6 +14,7 @@
 #include "masternodeconfig.h"
 #include "masternodeman.h"
 #include "messagesigner.h"
+#include "tiertwo/tiertwo_sync_state.h"
 #include "rpc/server.h"
 #include "utilmoneystr.h"
 #ifdef ENABLE_WALLET
@@ -152,7 +153,7 @@ UniValue preparebudget(const JSONRPCRequest& request)
     CTransactionRef wtx;
     // make our change address
     CReserveKey keyChange(pwallet);
-    if (!pwallet->CreateBudgetFeeTX(wtx, nHash, keyChange, false)) { // 50 NBLA collateral for proposal
+    if (!pwallet->CreateBudgetFeeTX(wtx, nHash, keyChange, BUDGET_FEE_TX_OLD)) { // 50 NBLA collateral for proposal
         throw std::runtime_error("Error making collateral transaction for proposal. Please check your wallet balance.");
     }
 
@@ -162,8 +163,9 @@ UniValue preparebudget(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_WALLET_ERROR, res.ToString());
 
     // Store proposal name as a comment
-    assert(pwallet->mapWallet.count(wtx->GetHash()));
-    pwallet->mapWallet.at(wtx->GetHash()).SetComment("Proposal: " + strProposalName);
+    auto it = pwallet->mapWallet.find(wtx->GetHash());
+    assert(it != pwallet->mapWallet.end());
+    it->second.SetComment("Proposal: " + strProposalName);
 
     return wtx->GetHash().ToString();
 }
@@ -204,7 +206,7 @@ UniValue submitbudget(const JSONRPCRequest& request)
     CScript scriptPubKey = GetScriptForDestination(address);
     const uint256& hash = ParseHashV(request.params[6], "parameter 1");
 
-    if (!masternodeSync.IsBlockchainSynced()) {
+    if (!g_tiertwo_sync_state.IsBlockchainSynced()) {
         throw std::runtime_error("Must wait for client to sync with masternode network. Try again in a minute or so.");
     }
 
@@ -603,7 +605,7 @@ UniValue createrawmnfinalbudget(const JSONRPCRequest& request)
         // create fee tx
         CTransactionRef wtx;
         CReserveKey keyChange(vpwallets[0]);
-        if (!vpwallets[0]->CreateBudgetFeeTX(wtx, budgetHash, keyChange, true)) {
+        if (!vpwallets[0]->CreateBudgetFeeTX(wtx, budgetHash, keyChange, BUDGET_FEE_TX)) {
             throw std::runtime_error("Can't make collateral transaction");
         }
         // Send the tx to the network
@@ -698,9 +700,9 @@ UniValue mnfinalbudget(const JSONRPCRequest& request)
         if (request.params.size() != 2)
             throw std::runtime_error("Correct usage is 'mnbudget getvotes budget-hash'");
 
+        uint256 hash(ParseHashV(request.params[1], "budget-hash"));
+
         LOCK(g_budgetman.cs_budgets);
-        std::string strHash = request.params[1].get_str();
-        uint256 hash(uint256S(strHash));
         CFinalizedBudget* pfinalBudget = g_budgetman.FindFinalizedBudget(hash);
         if (pfinalBudget == NULL) return "Unknown budget hash";
         return pfinalBudget->GetVotesObject();
@@ -719,7 +721,7 @@ UniValue checkbudgets(const JSONRPCRequest& request)
             "\nExamples:\n" +
             HelpExampleCli("checkbudgets", "") + HelpExampleRpc("checkbudgets", ""));
 
-    if (!masternodeSync.IsSynced())
+    if (!g_tiertwo_sync_state.IsSynced())
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Masternode/Budget sync not finished yet");
 
     g_budgetman.CheckAndRemove();

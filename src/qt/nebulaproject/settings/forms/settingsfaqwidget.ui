@@ -342,7 +342,7 @@
                   <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="text">
-                  <string notr="true">https://www.nebulaproject.io</string>
+                  <string notr="true">https://www.NEBULAPROJECT.org</string>
                  </property>
                 </widget>
                </item>

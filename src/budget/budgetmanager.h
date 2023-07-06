@@ -42,12 +42,13 @@ protected:
     // Memory Only. Updated in NewBlock (blocks arrive in order)
     std::atomic<int> nBestHeight;
 
-    // Spam protection
-    // who's asked for the complete budget sync and the last time
-    std::map<CNetAddr, int64_t> mAskedUsForBudgetSync; // guarded by cs_budgets and cs_proposals.
+    struct HighestFinBudget {
+        const CFinalizedBudget* m_budget_fin{nullptr};
+        int m_vote_count{0};
+    };
 
     // Returns a const pointer to the budget with highest vote count
-    const CFinalizedBudget* GetBudgetWithHighestVoteCount(int chainHeight) const;
+    HighestFinBudget GetBudgetWithHighestVoteCount(int chainHeight) const;
     int GetHighestVoteCount(int chainHeight) const;
     // Get the payee and amount for the budget with the highest vote count
     bool GetPayeeAndAmount(int chainHeight, CScript& payeeRet, CAmount& nAmountRet) const;
@@ -62,7 +63,7 @@ public:
     mutable RecursiveMutex cs_votes;
 
     // budget finalization
-    std::string strBudgetMode = "";
+    std::string strBudgetMode;
 
     CBudgetManager() {}
 
@@ -106,10 +107,9 @@ public:
     void SetBestHeight(int height) { nBestHeight.store(height, std::memory_order_release); };
     int GetBestHeight() const { return nBestHeight.load(std::memory_order_acquire); }
 
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    bool ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, int& banScore);
     /// Process the message and returns the ban score (0 if no banning is needed)
     int ProcessMessageInner(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
-    void NewBlock();
 
     int ProcessBudgetVoteSync(const uint256& nProp, CNode* pfrom);
     int ProcessProposal(CBudgetProposal& proposal);
@@ -178,11 +178,6 @@ public:
             mapSeenFinalizedBudgetVotes.clear();
             mapOrphanFinalizedBudgetVotes.clear();
         }
-        {
-            LOCK2(cs_budgets, cs_proposals);
-            mAskedUsForBudgetSync.clear();
-        }
-
         LogPrintf("Budget object cleared\n");
     }
     void CheckAndRemove();

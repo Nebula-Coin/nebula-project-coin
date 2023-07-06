@@ -49,14 +49,6 @@ if (QRCODE_FOUND)
     link_directories ( ${QRCODE_LIBRARY_DIRS} )
 endif()
 
-find_program(MOC_BIN NAMES moc moc-qt5 qt5-moc
-        PATHS /usr/lib/qt5/bin /usr/lib/x86_64-linux-gnu/qt5/bin /usr/local/opt/qt/bin /usr/local/opt/qt5/bin /opt/homebrew/opt/qt5/bin
-        NO_DEFAULT_PATH
-        NO_SYSTEM_ENVIRONMENT_PATH)
-if (MOC_BIN)
-    MESSAGE(STATUS "FOUND MOC ${MOC_BIN}")
-endif ()
-
 add_compile_options("-DQT_NO_KEYWORDS")
 
 # Why isn't this done automatically??
@@ -79,7 +71,6 @@ SET(QT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/notificator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/optionsmodel.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/peertablemodel.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/platformstyle.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/qvalidatedlineedit.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/qvaluecombobox.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/rpcconsole.cpp
@@ -94,7 +85,6 @@ SET(QT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/editaddressdialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/openuridialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/paymentserver.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/recentrequeststablemodel.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transactionfilterproxy.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transactionrecord.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/transactiontablemodel.cpp
@@ -134,7 +124,6 @@ SET(QT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/sendmemodialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/sendmultirow.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/send.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/addnewaddressdialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/addnewcontactdialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/requestdialog.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/receivewidget.cpp
@@ -168,10 +157,7 @@ SET(QT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/governancemodel.cpp
         )
 
-execute_process(
-        COMMAND ${MOC_BIN} -o moc_pfborderimage.cpp pfborderimage.h
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject
-)
+qt5_generate_moc(nebulaproject/pfborderimage.h ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/moc_pfborderimage.cpp)
 list(APPEND QT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/nebulaproject/moc_pfborderimage.cpp)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

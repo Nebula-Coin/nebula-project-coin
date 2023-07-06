@@ -55,7 +55,6 @@ extern const char * const DEFAULT_DEBUGLOGFILE;
 //NEBULAPROJECT only features
 
 extern std::atomic<bool> fMasterNode;
-extern bool fLiteMode;
 
 extern CTranslationInterface translationInterface;
 
@@ -101,6 +100,8 @@ fs::path GetDefaultDataDir();
 // The blocks directory is always net specific.
 const fs::path &GetBlocksDir();
 const fs::path &GetDataDir(bool fNetSpecific = true);
+// Return true if -datadir option points to a valid directory or is not specified.
+bool CheckDataDirOption();
 // Sapling network dir
 const fs::path &ZC_GetParamsDir();
 // Init sapling library
@@ -108,10 +109,6 @@ void initZKSNARKS();
 void ClearDatadirCache();
 fs::path GetConfigFile(const std::string& confPath);
 fs::path GetMasternodeConfigFile();
-#ifndef WIN32
-fs::path GetPidFile();
-void CreatePidFile(const fs::path& path, pid_t pid);
-#endif
 #ifdef WIN32
 fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif
@@ -270,9 +267,9 @@ void SetThreadPriority(int nPriority);
  * .. and a wrapper that just calls func once
  */
 template <typename Callable>
-void TraceThread(const char* name, Callable func)
+void TraceThread(const std::string name, Callable func)
 {
-    std::string s = strprintf("nebulaproject-%s", name);
+    std::string s = "nebulaproject-" + name;
     util::ThreadRename(s.c_str());
     try {
         LogPrintf("%s thread start\n", name);
@@ -282,10 +279,10 @@ void TraceThread(const char* name, Callable func)
         LogPrintf("%s thread interrupt\n", name);
         throw;
     } catch (std::exception& e) {
-        PrintExceptionContinue(&e, name);
+        PrintExceptionContinue(&e, name.c_str());
         throw;
     } catch (...) {
-        PrintExceptionContinue(NULL, name);
+        PrintExceptionContinue(nullptr, name.c_str());
         throw;
     }
 }

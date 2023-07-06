@@ -28,7 +28,6 @@
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
 #include "wallet/walletutil.h"
-#include "znblachain.h"
 
 #include <stdint.h>
 #include <univalue.h>
@@ -74,8 +73,10 @@ void EnsureWalletIsUnlocked(CWallet* const pwallet, bool fAllowAnonOnly)
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
 }
 
-void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry)
+static void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
+    AssertLockHeld(cs_main);
+
     int confirms = wtx.GetDepthInMainChain();
     entry.pushKV("confirmations", confirms);
     entry.pushKV("bcconfirmations", confirms);      // DEPRECATED in 4.3.99
@@ -84,7 +85,7 @@ void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry)
     if (confirms > 0) {
         entry.pushKV("blockhash", wtx.m_confirm.hashBlock.GetHex());
         entry.pushKV("blockindex", wtx.m_confirm.nIndex);
-        entry.pushKV("blocktime", mapBlockIndex[wtx.m_confirm.hashBlock]->GetBlockTime());
+        entry.pushKV("blocktime", LookupBlockIndex(wtx.m_confirm.hashBlock)->GetBlockTime());
     } else {
         entry.pushKV("trusted", wtx.IsTrusted());
     }
@@ -1094,12 +1095,13 @@ static UniValue ShieldSendManyTo(CWallet * const pwallet,
 
     // add comments
     const uint256& txHash = uint256S(txid);
-    assert(pwallet->mapWallet.count(txHash));
+    auto it = pwallet->mapWallet.find(txHash);
+    assert(it != pwallet->mapWallet.end());
     if (!commentStr.empty()) {
-        pwallet->mapWallet.at(txHash).mapValue["comment"] = commentStr;
+        it->second.mapValue["comment"] = commentStr;
     }
     if (!toStr.empty()) {
-        pwallet->mapWallet.at(txHash).mapValue["to"] = toStr;
+        it->second.mapValue["to"] = toStr;
     }
 
     return txid;
@@ -1528,13 +1530,13 @@ UniValue viewshieldtransaction(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    uint256 hash;
-    hash.SetHex(request.params[0].get_str());
+    uint256 hash(ParseHashV(request.params[0], "txid"));
 
     UniValue entry(UniValue::VOBJ);
-    if (!pwallet->mapWallet.count(hash))
+    auto it = pwallet->mapWallet.find(hash);
+    if (it == pwallet->mapWallet.end())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid or non-wallet transaction id");
-    const CWalletTx& wtx = pwallet->mapWallet.at(hash);
+    const CWalletTx& wtx = it->second;
 
     if (!wtx.tx->IsShieldedTx()) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid transaction, no shield data available");
@@ -1615,8 +1617,9 @@ UniValue viewshieldtransaction(const JSONRPCRequest& request)
     // Sapling outputs
     for (uint32_t i = 0; i < wtx.tx->sapData->vShieldedOutput.size(); ++i) {
         auto op = SaplingOutPoint(hash, i);
-        if (!wtx.mapSaplingNoteData.count(op)) continue;
-        const auto& nd = wtx.mapSaplingNoteData.at(op);
+        auto it = wtx.mapSaplingNoteData.find(op);
+        if (it == wtx.mapSaplingNoteData.end()) continue;
+        const auto& nd = it->second;
 
         const bool isOutgoing = !nd.IsMyNote();
         std::string addrStr = "unknown";
@@ -2807,8 +2810,9 @@ UniValue listreceivedbyshieldaddress(const JSONRPCRequest& request)
         int index = -1;
         int64_t time = 0;
 
-        if (pwallet->mapWallet.count(entry.op.hash)) {
-            const CWalletTx& wtx = pwallet->mapWallet.at(entry.op.hash);
+        auto it = pwallet->mapWallet.find(entry.op.hash);
+        if (it != pwallet->mapWallet.end()) {
+            const CWalletTx& wtx = it->second;
             if (!wtx.m_confirm.hashBlock.IsNull())
                 height = mapBlockIndex[wtx.m_confirm.hashBlock]->nHeight;
             index = wtx.m_confirm.nIndex;
@@ -2955,8 +2959,10 @@ static void MaybePushAddress(UniValue & entry, const CTxDestination &dest)
         entry.pushKV("address", EncodeDestination(dest));
 }
 
-static void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, int nMinDepth, bool fLong, UniValue& ret, const isminefilter& filter)
+static void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, int nMinDepth, bool fLong, UniValue& ret, const isminefilter& filter) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
+    AssertLockHeld(cs_main);
+
     CAmount nFee;
     std::list<COutputEntry> listReceived;
     std::list<COutputEntry> listSent;
@@ -3195,12 +3201,8 @@ UniValue listsinceblock(const JSONRPCRequest& request)
     isminefilter filter = ISMINE_SPENDABLE_ALL | ISMINE_COLD;
 
     if (request.params.size() > 0) {
-        uint256 blockId;
-
-        blockId.SetHex(request.params[0].get_str());
-        BlockMap::iterator it = mapBlockIndex.find(blockId);
-        if (it != mapBlockIndex.end())
-            pindex = it->second;
+        uint256 blockId(ParseHashV(request.params[0], "blockhash"));
+        pindex = LookupBlockIndex(blockId);
     }
 
     if (request.params.size() > 1) {
@@ -3286,8 +3288,7 @@ UniValue gettransaction(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    uint256 hash;
-    hash.SetHex(request.params[0].get_str());
+    uint256 hash(ParseHashV(request.params[0], "txid"));
 
     isminefilter filter = ISMINE_SPENDABLE_ALL | ISMINE_COLD;
     if (request.params.size() > 1)
@@ -3295,9 +3296,11 @@ UniValue gettransaction(const JSONRPCRequest& request)
             filter = filter | ISMINE_WATCH_ONLY;
 
     UniValue entry(UniValue::VOBJ);
-    if (!pwallet->mapWallet.count(hash))
+    auto it = pwallet->mapWallet.find(hash);
+    if (it == pwallet->mapWallet.end()) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid or non-wallet transaction id");
-    const CWalletTx& wtx = pwallet->mapWallet.at(hash);
+    }
+    const CWalletTx& wtx = it->second;
 
     CAmount nCredit = wtx.GetCredit(filter);
     CAmount nDebit = wtx.GetDebit(filter);
@@ -3351,8 +3354,7 @@ UniValue abandontransaction(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    uint256 hash;
-    hash.SetHex(request.params[0].get_str());
+    uint256 hash(ParseHashV(request.params[0], "txid"));
 
     if (!pwallet->mapWallet.count(hash))
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid or non-wallet transaction id");
@@ -3629,7 +3631,6 @@ UniValue encryptwallet(const JSONRPCRequest& request)
             "will require the passphrase to be set prior the making these calls.\n"
             "Use the walletpassphrase call for this, and then walletlock call.\n"
             "If the wallet is already encrypted, use the walletpassphrasechange call.\n"
-            "Note that this will shutdown the server.\n"
 
             "\nArguments:\n"
             "1. \"passphrase\"    (string) The pass phrase to encrypt the wallet with. It must be at least 1 character, but should be long.\n"
@@ -3668,11 +3669,7 @@ UniValue encryptwallet(const JSONRPCRequest& request)
     if (!pwallet->EncryptWallet(strWalletPass))
         throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Error: Failed to encrypt the wallet.");
 
-    // BDB seems to have a bad habit of writing old data into
-    // slack space in .dat files; that is bad if the old data is
-    // unencrypted private keys. So:
-    StartShutdown();
-    return "wallet encrypted; nebulaproject server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
+    return "wallet encrypted; The keypool has been flushed, you need to make a new backup.";
 }
 
 UniValue listunspent(const JSONRPCRequest& request)
@@ -3755,6 +3752,8 @@ UniValue listunspent(const JSONRPCRequest& request)
         nMaxDepth = request.params[1].get_int();
     }
 
+    CWallet::AvailableCoinsFilter coinFilter;
+
     std::set<CTxDestination> destinations;
     if (request.params.size() > 2) {
         RPCTypeCheckArgument(request.params[2], UniValue::VARR);
@@ -3768,6 +3767,7 @@ UniValue listunspent(const JSONRPCRequest& request)
                 throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + input.get_str());
             destinations.insert(dest);
         }
+        coinFilter.onlyFilteredDest = &destinations;
     }
 
     // List watch only utxo
@@ -3779,7 +3779,6 @@ UniValue listunspent(const JSONRPCRequest& request)
             nWatchonlyConfig = 1;
     }
 
-    CWallet::AvailableCoinsFilter coinFilter;
     if (request.params.size() > 4) {
         const UniValue& options = request.params[4].get_obj();
 
@@ -3823,39 +3822,26 @@ UniValue listunspent(const JSONRPCRequest& request)
         if (out.nDepth < nMinDepth || out.nDepth > nMaxDepth)
             continue;
 
-        if (!destinations.empty()) {
-            CTxDestination address;
-            if (!ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, address))
-                continue;
-
-            if (!destinations.count(address))
-                continue;
-        }
-
-        CAmount nValue = out.tx->tx->vout[out.i].nValue;
-        const CScript& pk = out.tx->tx->vout[out.i].scriptPubKey;
         UniValue entry(UniValue::VOBJ);
         entry.pushKV("txid", out.tx->GetHash().GetHex());
         entry.pushKV("vout", out.i);
         entry.pushKV("generated", out.tx->IsCoinStake() || out.tx->IsCoinBase());
         CTxDestination address;
-        if (ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, address)) {
+        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+        if (ExtractDestination(scriptPubKey, address)) {
             entry.pushKV("address", EncodeDestination(address));
             if (pwallet->HasAddressBook(address)) {
                 entry.pushKV("label", pwallet->GetNameForAddressBookEntry(address));
             }
-        }
-        entry.pushKV("scriptPubKey", HexStr(pk));
-        if (pk.IsPayToScriptHash()) {
-            CTxDestination address;
-            if (ExtractDestination(pk, address)) {
+            if (scriptPubKey.IsPayToScriptHash()) {
                 const CScriptID& hash = boost::get<CScriptID>(address);
                 CScript redeemScript;
                 if (pwallet->GetCScript(hash, redeemScript))
                     entry.pushKV("redeemScript", HexStr(redeemScript));
             }
         }
-        entry.pushKV("amount", ValueFromAmount(nValue));
+        entry.pushKV("scriptPubKey", HexStr(scriptPubKey));
+        entry.pushKV("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue));
         entry.pushKV("confirmations", out.nDepth);
         entry.pushKV("spendable", out.fSpendable);
         entry.pushKV("solvable", out.fSolvable);
@@ -4094,17 +4080,14 @@ UniValue lockunspent(const JSONRPCRequest& request)
                 {"vout", UniValueType(UniValue::VNUM)},
             });
 
-        const std::string& txid = find_value(o, "txid").get_str();
-        if (!IsHex(txid)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected hex txid");
-        }
+        const uint256 txid(ParseHashO(o, "txid"));
 
         const int nOutput = find_value(o, "vout").get_int();
         if (nOutput < 0) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, vout must be positive");
         }
 
-        const COutPoint outpt(uint256S(txid), nOutput);
+        const COutPoint outpt(txid, nOutput);
 
         const auto it = pwallet->mapWallet.find(outpt.hash);
         if (it == pwallet->mapWallet.end()) {

@@ -9,7 +9,6 @@
 #include "qt/nebulaproject/tooltipmenu.h"
 
 #include "qt/nebulaproject/addnewcontactdialog.h"
-#include "qt/nebulaproject/nebulaprojectgui.h"
 #include "guiutil.h"
 #include "qt/nebulaproject/qtutils.h"
 #include "walletmodel.h"

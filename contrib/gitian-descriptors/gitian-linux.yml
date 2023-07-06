@@ -1,5 +1,5 @@
 ---
-name: "nebulaproject-linux-5.4"
+name: "nebulaproject-linux-5.5"
 enable_cache: true
 distro: "ubuntu"
 suites:

@@ -8,7 +8,6 @@
 #include "qt/nebulaproject/pwidget.h"
 #include "qt/nebulaproject/furabstractlistitemdelegate.h"
 #include "qt/nebulaproject/tooltipmenu.h"
-#include "walletmodel.h"
 
 #include <atomic>
 

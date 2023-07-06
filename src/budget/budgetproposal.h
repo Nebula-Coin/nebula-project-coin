@@ -37,11 +37,12 @@ private:
     std::string strInvalid;
 
     // Functions used inside UpdateValid()/IsWellFormed - setting strInvalid
-    bool IsHeavilyDownvoted(bool fNewRules);
+    bool IsHeavilyDownvoted(int mnCount);
     bool updateExpired(int nCurrentHeight);
     bool CheckStartEnd();
     bool CheckAmount(const CAmount& nTotalBudget);
     bool CheckAddress();
+    bool CheckStrings();
 
 protected:
     std::map<COutPoint, CBudgetVote> mapVotes;
@@ -68,7 +69,7 @@ public:
     void SyncVotes(CNode* pfrom, bool fPartial, int& nInvCount) const;
 
     // sets fValid and strInvalid, returns fValid
-    bool UpdateValid(int nHeight);
+    bool UpdateValid(int nHeight, int mnCount);
     // Static checks that should be done only once - sets strInvalid
     bool IsWellFormed(const CAmount& nTotalBudget);
     bool IsValid() const  { return fValid; }
