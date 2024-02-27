@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -225,9 +225,9 @@ QString BitcoinUnits::floorWithUnit(int unit, const CAmount& amount, bool plussi
         if (!cleanRemainderZeros) {
             result.chop(decimals(unit) - digits);
         } else {
-            int lenght = result.mid(result.indexOf("."), result.length() - 1).length() - 1;
-            if (lenght > digits) {
-                result.chop(lenght - digits);
+            int length = result.mid(result.indexOf("."), result.length() - 1).length() - 1;
+            if (length > digits) {
+                result.chop(length - digits);
             }
         }
     }

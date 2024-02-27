@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021 The PIVX developers
+# Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php .
 
@@ -47,7 +47,7 @@ class WalletSaplingTest(NebulaprojectTestFramework):
         # now unlock the wallet and try to generate the key again
         node.walletpassphrase(password, 12000)
         new_addr = node.getnewshieldaddress()
-        assert(new_addr is not None)
+        assert new_addr is not None
 
         # and verify that the key has been added
         found = False

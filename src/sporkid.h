@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2016 The Dash developers
-// Copyright (c) 2016-2020 The PIVX developers
+// Copyright (c) 2016-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -27,6 +27,7 @@ enum SporkId : int32_t {
     SPORK_20_SAPLING_MAINTENANCE                = 10020,
     SPORK_21_LEGACY_MNS_MAX_HEIGHT              = 10021,
     SPORK_22_LLMQ_DKG_MAINTENANCE               = 10022,
+    SPORK_23_CHAINLOCKS_ENFORCEMENT             = 10023,
 
     SPORK_INVALID                               = -1
 };

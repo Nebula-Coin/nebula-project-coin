@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2017-2019 The PIVX developers
+// Copyright (c) 2017-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -73,6 +73,8 @@ void SyncWithValidationInterfaceQueue();
 class CValidationInterface {
 public:
     virtual ~CValidationInterface() = default;
+    virtual void AcceptedBlockHeader(const CBlockIndex* pindexNew) {}
+
 protected:
     /**
      * Notifies listeners when the block chain tip advances.
@@ -172,6 +174,7 @@ public:
 
     size_t CallbacksPending();
 
+    void AcceptedBlockHeader(const CBlockIndex* pindexNew);
     void UpdatedBlockTip(const CBlockIndex *, const CBlockIndex *, bool fInitialDownload);
     void TransactionAddedToMempool(const CTransactionRef &ptxn);
     void TransactionRemovedFromMempool(const CTransactionRef&, MemPoolRemovalReason);

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2018 The Zcash developers
-# Copyright (c) 20202 The PIVX developers
+# Copyright (c) 20202 The NEBULAPROJECT Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,7 +16,7 @@ class SaplingWalletPersistenceTest(NebulaprojectTestFramework):
     def run_test(self):
         sapling_addr = self.nodes[0].getnewshieldaddress()
         addresses = self.nodes[0].listshieldaddresses()
-        # make sure the node has the addresss
+        # make sure the node has the addresses
         assert_true(sapling_addr in addresses, "Should contain address before restart")
         # restart the nodes
         self.stop_node(0)

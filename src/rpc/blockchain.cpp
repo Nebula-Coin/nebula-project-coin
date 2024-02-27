@@ -1,17 +1,20 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2022 The PIVX developers
+// Copyright (c) 2015-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
 #include "budget/budgetmanager.h"
+#include "chainparams.h"
 #include "checkpoints.h"
 #include "clientversion.h"
-#include "core_io.h"
 #include "consensus/upgrades.h"
+#include "core_io.h"
+#include "hash.h"
 #include "kernel.h"
 #include "key_io.h"
+#include "llmq/quorums_chainlocks.h"
 #include "masternodeman.h"
 #include "policy/feerate.h"
 #include "policy/policy.h"
@@ -22,7 +25,7 @@
 #include "util/system.h"
 #include "utilmoneystr.h"
 #include "utilstrencodings.h"
-#include "hash.h"
+#include "validation.h"
 #include "validationinterface.h"
 #include "wallet/wallet.h"
 #include "warnings.h"
@@ -65,7 +68,7 @@ double GetDifficulty(const CBlockIndex* blockindex)
 {
     // Floating point number that is a multiple of the minimum difficulty,
     // minimum difficulty = 1.0.
-    if (blockindex == NULL) {
+    if (blockindex == nullptr) {
         const CBlockIndex* pChainTip = GetChainTip();
         if (!pChainTip)
             return 1.0;
@@ -133,6 +136,7 @@ UniValue blockheaderToJSON(const CBlockIndex* tip, const CBlockIndex* blockindex
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
     if (pnext)
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    result.pushKV("chainlock", llmq::chainLocksHandler->HasChainLock(blockindex->nHeight, blockindex->GetBlockHash()));
     return result;
 }
 
@@ -186,6 +190,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* tip, const CBlockIn
         result.pushKV("stakeModifier", stakeModifier);
         result.pushKV("hashProofOfStake", hashProofOfStakeRet.GetHex());
     }
+    result.pushKV("chainlock", llmq::chainLocksHandler->HasChainLock(blockindex->nHeight, blockindex->GetBlockHash()));
 
     return result;
 }
@@ -1211,7 +1216,7 @@ UniValue invalidateblock(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "invalidateblock \"blockhash\"\n"
-            "\nPermanently marks a block as invalid, as if it violated a consensus rule.\n"
+            "\nPermanently marks a block as invalid, as if it violated a consensus rule. Note: it might take up to some minutes and after calling it's reccomended to run recover transactions. \n"
 
             "\nArguments:\n"
             "1. blockhash   (string, required) the hash of the block to mark as invalid\n"
@@ -1228,6 +1233,16 @@ UniValue invalidateblock(const JSONRPCRequest& request)
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
 
         CBlockIndex* pblockindex = mapBlockIndex[hash];
+        // For each wallet in your wallet list
+        std::string errString = "";
+        for (auto* pwallet : vpwallets) {
+            //Do we need to recreate the witnesscache or is the current one enough?
+            if (pwallet->GetSaplingScriptPubKeyMan()->nWitnessCacheSize <= (chainActive.Height() - pblockindex->nHeight + 1)) {
+                if (!pwallet->GetSaplingScriptPubKeyMan()->BuildWitnessChain(pblockindex, Params().GetConsensus(), errString)) {
+                    throw JSONRPCError(RPC_DATABASE_ERROR, errString);
+                }
+            }
+        }
         InvalidateBlock(state, Params(), pblockindex);
     }
 
@@ -1396,7 +1411,7 @@ UniValue getblockindexstats(const JSONRPCRequest& request) {
             // Shield inputs
             nValueIn += tx.GetShieldedValueIn();
 
-            // Tranparent/Shield outputs
+            // Transparent/Shield outputs
             nValueOut += tx.GetValueOut();
 
             // update fee
@@ -1670,6 +1685,7 @@ UniValue scantxoutset(const JSONRPCRequest& request)
     return result;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -1689,9 +1705,8 @@ static const CRPCCommand commands[] =
     { "blockchain",         "getsupplyinfo",          &getsupplyinfo,          true,  {"force_update"} },
     { "blockchain",         "gettxout",               &gettxout,               true,  {"txid","n","include_mempool"} },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true,  {} },
-    { "blockchain",         "verifychain",            &verifychain,            true,  {"nblocks"} },
-
     { "blockchain",         "scantxoutset",           &scantxoutset,           true,  {"action", "scanobjects"} },
+    { "blockchain",         "verifychain",            &verifychain,            true,  {"nblocks"} },
 
     /* Not shown in help */
     { "hidden",             "invalidateblock",        &invalidateblock,        true,  {"blockhash"} },
@@ -1700,9 +1715,8 @@ static const CRPCCommand commands[] =
     { "hidden",             "waitforblockheight",     &waitforblockheight,     true,  {"height","timeout"} },
     { "hidden",             "waitfornewblock",        &waitfornewblock,        true,  {"timeout"} },
     { "hidden",             "syncwithvalidationinterfacequeue", &syncwithvalidationinterfacequeue, true,  {} },
-
-
 };
+// clang-format on
 
 void RegisterBlockchainRPCCommands(CRPCTable &tableRPC)
 {

@@ -1,5 +1,5 @@
 // Copyright (c) 2012-2017 The Bitcoin Core developers
-// Copyright (c) 2016-2019 The PIVX developers
+// Copyright (c) 2016-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,8 +45,8 @@ const std::string CLIENT_NAME(PACKAGE_NAME);
 //! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
 #define GIT_ARCHIVE 1
 #ifdef GIT_ARCHIVE
-#define GIT_COMMIT_ID "7fc4e325bd3b6d4df7f846c8a11ec8dc0f88c8be"
-#define GIT_COMMIT_DATE "Fri, 23 Dec 2022 11:28:18 -0800"
+#define GIT_COMMIT_ID "7d134c64139aaba58b118e3dc8cd73ebbda24121"
+#define GIT_COMMIT_DATE "Fri, 16 Feb 2024 19:54:42 -0800"
 #endif
 
 #define BUILD_DESC_WITH_SUFFIX(maj, min, rev, build, suffix) \

@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -350,7 +350,7 @@ TrxValidationStatus CFinalizedBudget::IsTransactionValid(const CTransaction& txN
     // Search the payment
     const CScript& scriptExpected = vecBudgetPayments[nCurrentBudgetPayment].payee;
     const CAmount& amountExpected = vecBudgetPayments[nCurrentBudgetPayment].nAmount;
-    // Budget payment is usually the last output of coinstake txes, iterate backwords
+    // Budget payment is usually the last output of coinstake txes, iterate backwards
     for (auto out = txNew.vout.rbegin(); out != txNew.vout.rend(); ++out) {
         LogPrint(BCLog::MNBUDGET,"%s: nCurrentBudgetPayment=%d, payee=%s == out.scriptPubKey=%s, amount=%ld == out.nValue=%ld\n",
                 __func__, nCurrentBudgetPayment, HexStr(scriptExpected), HexStr(out->scriptPubKey), amountExpected, out->nValue);

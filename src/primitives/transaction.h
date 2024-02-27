@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2021 The PIVX developers
+// Copyright (c) 2015-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -9,9 +9,10 @@
 
 #include "amount.h"
 #include "memusage.h"
+#include "netaddress.h"
+#include "optional.h"
 #include "script/script.h"
 #include "serialize.h"
-#include "optional.h"
 #include "uint256.h"
 
 #include "sapling/sapling_transaction.h"
@@ -379,6 +380,7 @@ public:
 
     bool IsCoinStake() const;
     bool HasP2CSOutputs() const;
+    bool HasExchangeAddr() const;
 
     friend bool operator==(const CTransaction& a, const CTransaction& b)
     {
@@ -461,7 +463,7 @@ static inline CTransactionRef MakeTransactionRef(CTransactionRef&& txIn) { retur
 template <typename T>
 inline bool GetTxPayload(const std::vector<unsigned char>& payload, T& obj)
 {
-    CDataStream ds(payload, SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream ds(payload, SER_NETWORK, PROTOCOL_VERSION | ADDRV2_FORMAT);
     try {
         ds >> obj;
     } catch (std::exception& e) {
@@ -483,7 +485,7 @@ inline bool GetTxPayload(const CTransaction& tx, T& obj)
 template <typename T>
 void SetTxPayload(CMutableTransaction& tx, const T& payload)
 {
-    CDataStream ds(SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream ds(SER_NETWORK, PROTOCOL_VERSION | ADDRV2_FORMAT);
     ds << payload;
     tx.extraPayload.emplace(ds.begin(), ds.end());
 }

@@ -19,7 +19,7 @@ NEBULAPROJECT is an open source community-driven cryptocurrency, focused on five
 
 (5) Ease of Use: NEBULAPROJECT is determined to offer the best possible graphical interface for a core node/wallet. A full featured graphical product for new and advanced users.
 
-A lot more information and specs at [NEBULAPROJECT.org](https://www.nebulaproject.io/). Join the community at [NEBULAPROJECT Discord](https://discord.com/invite/cN4UKP2UCm).
+A lot more information and specs at [NEBULAPROJECT.org](https://www.nebulaproject.org/). Join the community at [NEBULAPROJECT Discord](https://discordapp.com/invite/jzqVsJd).
 
 ## License
 NEBULAPROJECT Core is released under the terms of the MIT license. See [COPYING](https://github.com/Nebula-Project/nebula-project/blob/master/COPYING) for more information or see https://opensource.org/licenses/MIT.

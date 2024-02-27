@@ -1,5 +1,5 @@
 // Copyright (c) 2018-2021 The Dash Core developers
-// Copyright (c) 2021 The NEBULAPROJECT Core developers
+// Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -168,8 +168,8 @@ static void CheckEvoUpgradeEnforcement()
 
 // Allows to specify NEBULAPROJECT address or priv key (as strings). In case of NEBULAPROJECT address, the priv key is taken from the wallet
 static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, bool allowAddresses = true) {
-    bool isStaking{false}, isShield{false};
-    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, isStaking, isShield);
+    bool isStaking{false}, isShield{false}, isExchange{false};
+    const CWDestination& cwdest = Standard::DecodeDestination(strKeyOrAddress, isStaking, isExchange, isShield);
     if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
@@ -198,8 +198,8 @@ static CKey ParsePrivKey(CWallet* pwallet, const std::string &strKeyOrAddress, b
 
 static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress)
 {
-    bool isStaking{false}, isShield{false};
-    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, isStaking, isShield);
+    bool isStaking{false}, isShield{false}, isExchange{false};
+    const CWDestination& cwdest = Standard::DecodeDestination(strAddress, isStaking, isExchange, isShield);
     if (isStaking) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "cold staking addresses not supported");
     }
@@ -1060,22 +1060,23 @@ UniValue generateblskeypair(const JSONRPCRequest& request)
     return ret;
 }
 
-
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category       name                              actor (function)         okSafe argNames
   //  -------------- --------------------------------- ------------------------ ------ --------
-    { "evo",         "generateblskeypair",             &generateblskeypair,     true,  {}  },
-    { "evo",         "protx_list",                     &protx_list,             true,  {"detailed","wallet_only","valid_only","height"}  },
+    { "evo",         "generateblskeypair",             &generateblskeypair,     true,  {} },
+    { "evo",         "protx_list",                     &protx_list,             true,  {"detailed","wallet_only","valid_only","height"} },
 #ifdef ENABLE_WALLET
     { "evo",         "protx_register",                 &protx_register,         true,  {"collateralHash","collateralIndex","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
     { "evo",         "protx_register_fund",            &protx_register_fund,    true,  {"collateralAddress","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
     { "evo",         "protx_register_prepare",         &protx_register_prepare, true,  {"collateralHash","collateralIndex","ipAndPort","ownerAddress","operatorPubKey","votingAddress","payoutAddress","operatorReward","operatorPayoutAddress"} },
-    { "evo",         "protx_register_submit",          &protx_register_submit,  true,  {"tx","sig"}  },
-    { "evo",         "protx_revoke",                   &protx_revoke,           true,  {"proTxHash","operatorKey","reason"}  },
-    { "evo",         "protx_update_registrar",         &protx_update_registrar, true,  {"proTxHash","operatorPubKey","votingAddress","payoutAddress","ownerKey"}  },
-    { "evo",         "protx_update_service",           &protx_update_service,   true,  {"proTxHash","ipAndPort","operatorPayoutAddress","operatorKey"}  },
+    { "evo",         "protx_register_submit",          &protx_register_submit,  true,  {"tx","sig"} },
+    { "evo",         "protx_revoke",                   &protx_revoke,           true,  {"proTxHash","operatorKey","reason"} },
+    { "evo",         "protx_update_registrar",         &protx_update_registrar, true,  {"proTxHash","operatorPubKey","votingAddress","payoutAddress","ownerKey"} },
+    { "evo",         "protx_update_service",           &protx_update_service,   true,  {"proTxHash","ipAndPort","operatorPayoutAddress","operatorKey"} },
 #endif  //ENABLE_WALLET
 };
+// clang-format on
 
 void RegisterEvoRPCCommands(CRPCTable& _tableRPC)
 {

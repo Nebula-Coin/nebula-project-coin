@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The PIVX developers
+// Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -28,7 +28,7 @@ void ResetTierTwoInterfaces();
 void InitTierTwoPreChainLoad(bool fReindex);
 
 /** Inits the tier two global objects that require access to the coins tip cache */
-void InitTierTwoPostCoinsCacheLoad();
+void InitTierTwoPostCoinsCacheLoad(CScheduler* scheduler);
 
 /** Initialize chain tip */
 void InitTierTwoChainTip();

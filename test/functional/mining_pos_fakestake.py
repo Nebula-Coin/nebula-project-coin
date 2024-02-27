@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2019-2020 The PIVX developers
+# Copyright (c) 2019-2022 The NEBULAPROJECT Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
@@ -7,7 +7,7 @@ Covers various scenarios of PoS blocks where the coinstake input is already spen
 (either in a previous block, in a "future" block, or in the same block being staked).
 Two nodes: nodes[0] moves the chain and checks the spam blocks, nodes[1] sends them.
 Spend txes sent from nodes[1] are received by nodes[0]
-Start with the PoW chache: 200 blocks.
+Start with the PoW cache: 200 blocks.
 For each test, nodes[1] sends 3 blocks.
 
 At the beginning nodes[0] mines 50 blocks (201-250) to reach PoS activation.
@@ -51,7 +51,6 @@ from test_framework.messages import COutPoint
 from test_framework.test_framework import NebulaprojectTestFramework
 from test_framework.util import (
     assert_equal,
-    bytes_to_hex_str,
     set_node_times
 )
 
@@ -169,7 +168,7 @@ class FakeStakeTest(NebulaprojectTestFramework):
 
     def send_block_and_check_error(self, block, error_mess):
         with self.nodes[1].assert_debug_log([error_mess]):
-            self.nodes[1].submitblock(bytes_to_hex_str(block.serialize()))
+            self.nodes[1].submitblock(block.serialize().hex())
 
 
     def fake_stake(self,
@@ -248,7 +247,7 @@ class FakeStakeTest(NebulaprojectTestFramework):
                     reject_log = "bad-txns-inputs-spent-fork-post-split"
                 self.send_block_and_check_error(block, reject_log)
             else:
-                var = self.nodes[1].submitblock(bytes_to_hex_str(block.serialize()))
+                var = self.nodes[1].submitblock(block.serialize().hex())
                 if (var != "inconclusive"):
                     raise AssertionError("Error, block not submitted (%s) in %s chain" % (var, chainName))
             self.log.info("Done.")

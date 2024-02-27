@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -87,6 +87,10 @@ void TxRow::setType(bool isLightTheme, int type, bool isConfirmed)
         case TransactionRecord::RecvFromZerocoinSpend:
         case TransactionRecord::RecvWithShieldedAddress:
             path = "://ic-transaction-received";
+            css = "text-list-amount-receive";
+            break;
+        case TransactionRecord::RecvWithShieldedAddressMemo:
+            path = "://ic-transaction-received-memo";
             css = "text-list-amount-receive";
             break;
         case TransactionRecord::SendToAddress:

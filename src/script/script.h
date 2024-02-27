@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2016-2020 The PIVX developers
+// Copyright (c) 2016-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -186,6 +186,9 @@ enum opcodetype
     // cold staking
     OP_CHECKCOLDSTAKEVERIFY_LOF = 0xd1,     // last output free for masternode/budget payments
     OP_CHECKCOLDSTAKEVERIFY = 0xd2,
+
+    // exchange address, NOP but identifies as an address not allowing private outputs
+    OP_EXCHANGEADDR = 0xe0,
 
     OP_INVALIDOPCODE = 0xff,
 };
@@ -491,7 +494,7 @@ public:
     bool GetOp(iterator& pc, opcodetype& opcodeRet)
     {
          const_iterator pc2 = pc;
-         bool fRet = GetOp2(pc2, opcodeRet, NULL);
+         bool fRet = GetOp2(pc2, opcodeRet, nullptr);
          pc = begin() + (pc2 - begin());
          return fRet;
     }
@@ -503,7 +506,7 @@ public:
 
     bool GetOp(const_iterator& pc, opcodetype& opcodeRet) const
     {
-        return GetOp2(pc, opcodeRet, NULL);
+        return GetOp2(pc, opcodeRet, nullptr);
     }
 
     bool GetOp2(const_iterator& pc, opcodetype& opcodeRet, std::vector<unsigned char>* pvchRet) const
@@ -630,6 +633,7 @@ public:
     bool IsPayToScriptHash() const;
     bool IsPayToColdStaking() const;
     bool IsPayToColdStakingLOF() const;
+    bool IsPayToExchangeAddress() const;
     bool StartsWithOpcode(const opcodetype opcode) const;
     bool IsZerocoinMint() const;
     bool IsZerocoinSpend() const;

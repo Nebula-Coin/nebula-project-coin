@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The PIVX developers
+// Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -64,17 +64,17 @@ void ResetTierTwoInterfaces()
 
 void InitTierTwoPreChainLoad(bool fReindex)
 {
-    int64_t nEvoDbCache = 1024 * 1024 * 16; // TODO
+    int64_t nEvoDbCache = 1024 * 1024 * 64; // Max cache is 64MB
     deterministicMNManager.reset();
     evoDb.reset();
     evoDb.reset(new CEvoDB(nEvoDbCache, false, fReindex));
     deterministicMNManager.reset(new CDeterministicMNManager(*evoDb));
 }
 
-void InitTierTwoPostCoinsCacheLoad()
+void InitTierTwoPostCoinsCacheLoad(CScheduler* scheduler)
 {
     // Initialize LLMQ system
-    llmq::InitLLMQSystem(*evoDb);
+    llmq::InitLLMQSystem(*evoDb, scheduler, false);
 }
 
 void InitTierTwoChainTip()

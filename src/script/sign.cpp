@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2016-2022 The PIVX developers
+// Copyright (c) 2016-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -87,6 +87,7 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
         keyID = CPubKey(vSolutions[0]).GetID();
         return Sign1(keyID, creator, scriptPubKey, ret, sigversion);
     case TX_PUBKEYHASH:
+    case TX_EXCHANGEADDR:
         keyID = CKeyID(uint160(vSolutions[0]));
         if (!Sign1(keyID, creator, scriptPubKey, ret, sigversion))
             return false;
@@ -300,6 +301,7 @@ static Stacks CombineSignatures(const CScript& scriptPubKey, const BaseSignature
         return sigs2;
     case TX_PUBKEY:
     case TX_PUBKEYHASH:
+    case TX_EXCHANGEADDR:
     case TX_COLDSTAKE:
         // Signatures are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())

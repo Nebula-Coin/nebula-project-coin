@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin developers
-// Copyright (c) 2017-2020 The PIVX developers
+// Copyright (c) 2017-2020 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,8 +11,9 @@
 #include "util/macros.h"
 
 #include <condition_variable>
-#include <thread>
 #include <mutex>
+#include <string>
+#include <thread>
 
 
 /////////////////////////////////////////////////

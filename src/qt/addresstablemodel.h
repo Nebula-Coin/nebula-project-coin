@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2013 The Bitcoin developers
-// Copyright (c) 2017-2020 The PIVX developers
+// Copyright (c) 2017-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -40,7 +40,7 @@ public:
     enum EditStatus {
         OK,                    /**< Everything ok */
         NO_CHANGES,            /**< No changes were made during edit operation */
-        INVALID_ADDRESS,       /**< Unparseable address */
+        INVALID_ADDRESS,       /**< Unparsable address */
         DUPLICATE_ADDRESS,     /**< Address already in address book */
         WALLET_UNLOCK_FAILURE, /**< Wallet could not be unlocked to create new receiving address */
         KEY_GENERATION_FAILURE /**< Generating a new public key for a receiving address failed */

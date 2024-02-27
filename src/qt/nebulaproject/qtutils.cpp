@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -159,7 +159,8 @@ void setSortTxTypeFilter(QComboBox* filter, SortEdit* lineEditType)
     filter->addItem(QObject::tr("Received"),
                     TransactionFilterProxy::TYPE(TransactionRecord::RecvWithAddress) |
                     TransactionFilterProxy::TYPE(TransactionRecord::RecvFromOther) |
-                    TransactionFilterProxy::TYPE(TransactionRecord::RecvWithShieldedAddress));
+                    TransactionFilterProxy::TYPE(TransactionRecord::RecvWithShieldedAddress) |
+                    TransactionFilterProxy::TYPE(TransactionRecord::RecvWithShieldedAddressMemo));
     filter->addItem(QObject::tr("Sent"),
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToAddress) |
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToOther) |
@@ -167,6 +168,7 @@ void setSortTxTypeFilter(QComboBox* filter, SortEdit* lineEditType)
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToNobody));
     filter->addItem(QObject::tr("Shield"),
                     TransactionFilterProxy::TYPE(TransactionRecord::RecvWithShieldedAddress) |
+                    TransactionFilterProxy::TYPE(TransactionRecord::RecvWithShieldedAddressMemo) |
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToShielded) |
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToSelfShieldToShieldChangeAddress) |
                     TransactionFilterProxy::TYPE(TransactionRecord::SendToSelfShieldToTransparent) |

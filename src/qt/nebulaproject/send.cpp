@@ -1,23 +1,28 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "qt/nebulaproject/send.h"
-#include "qt/nebulaproject/forms/ui_send.h"
+#include "addresstablemodel.h"
+#include "clientmodel.h"
+#include "coincontrol.h"
+#include "destination_io.h"
+#include "key_io.h"
+#include "openuridialog.h"
+#include "operationresult.h"
+#include "optionsmodel.h"
 #include "qt/nebulaproject/addnewcontactdialog.h"
-#include "qt/nebulaproject/qtutils.h"
-#include "qt/nebulaproject/sendchangeaddressdialog.h"
-#include "qt/nebulaproject/optionbutton.h"
-#include "qt/nebulaproject/sendconfirmdialog.h"
+#include "qt/nebulaproject/forms/ui_send.h"
 #include "qt/nebulaproject/guitransactionsutils.h"
 #include "qt/nebulaproject/loadingdialog.h"
-#include "clientmodel.h"
-#include "optionsmodel.h"
-#include "operationresult.h"
-#include "addresstablemodel.h"
-#include "coincontrol.h"
+#include "qt/nebulaproject/optionbutton.h"
+#include "qt/nebulaproject/qtutils.h"
+#include "qt/nebulaproject/sendchangeaddressdialog.h"
+#include "qt/nebulaproject/sendconfirmdialog.h"
+#include "qt/walletmodel.h"
+#include "sapling/address.h"
+#include "sapling/key_io_sapling.h"
 #include "script/standard.h"
-#include "openuridialog.h"
 
 #define REQUEST_PREPARE_TX 1
 #define REQUEST_REFRESH_BALANCE 2
@@ -160,14 +165,14 @@ void SendWidget::refreshAmounts()
     } else {
         interfaces::WalletBalances balances = walletModel->GetWalletBalances();
         if (isTransparent) {
-            totalAmount = balances.balance - balances.shielded_balance - walletModel->getLockedBalance() - total;
+            totalAmount = balances.balance - balances.shielded_balance - walletModel->getLockedBalance(isTransparent) - total;
             if (!fDelegationsChecked) {
                 totalAmount -= balances.delegate_balance;
             }
             // show delegated balance if exist
             delegatedBalance = balances.delegate_balance;
         } else {
-            totalAmount = balances.shielded_balance - total;
+            totalAmount = balances.shielded_balance - total - walletModel->getLockedBalance(isTransparent);
         }
         titleTotalRemaining = tr("Unlocked remaining");
     }
@@ -272,9 +277,11 @@ void SendWidget::resetCoinControl()
 
 void SendWidget::resetChangeAddress()
 {
-    if (coinControlDialog) coinControlDialog->coinControl->destChange = CNoDestination();
+    if (coinControlDialog) {
+        coinControlDialog->coinControl->destShieldChange = boost::none;
+        coinControlDialog->coinControl->destChange = CNoDestination();
+    }
     ui->btnChangeAddress->setActive(false);
-    ui->btnChangeAddress->setVisible(isTransparent);
 }
 
 void SendWidget::clearEntries()
@@ -413,7 +420,7 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
                              const std::function<bool(QList<SendCoinsRecipient>&)>& func)
 {
     // First check SPORK_20 (before unlock)
-    bool isShieldedTx = hasShieldedOutput || !isTransparent;
+    bool isShieldedTx = hasShieldedOutput || !isTransparent || coinControlDialog->coinControl->destShieldChange;
     if (isShieldedTx) {
         if (walletModel->isSaplingInMaintenance()) {
             inform(tr("Sapling Protocol temporarily in maintenance. Shielded transactions disabled (SPORK 20)"));
@@ -450,7 +457,6 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
         if (sendFinalStep()) {
             updateEntryLabels(ptrModelTx->getRecipients());
         }
-        setFocusOnLastEntry();
     } else if (!processingResultError->isEmpty()){
         inform(*processingResultError);
     }
@@ -467,7 +473,7 @@ void SendWidget::ProcessSend(QList<SendCoinsRecipient>& recipients, bool hasShie
 
 OperationResult SendWidget::prepareShielded(WalletModelTransaction* currentTransaction, bool fromTransparent)
 {
-    bool hasCoinsOrNotesSelected = coinControlDialog && coinControlDialog->coinControl && coinControlDialog->coinControl->HasSelected();
+    bool hasCoinsOrNotesSelected = coinControlDialog && coinControlDialog->coinControl;
     return walletModel->PrepareShieldedTransaction(currentTransaction,
                                                    fromTransparent,
                                                    hasCoinsOrNotesSelected ? coinControlDialog->coinControl : nullptr);
@@ -604,15 +610,18 @@ void SendWidget::updateEntryLabels(const QList<SendCoinsRecipient>& recipients)
 void SendWidget::onChangeAddressClicked()
 {
     showHideOp(true);
-    SendChangeAddressDialog* dialog = new SendChangeAddressDialog(window, walletModel);
+    SendChangeAddressDialog* dialog = new SendChangeAddressDialog(window, walletModel, isTransparent);
     if (IsValidDestination(coinControlDialog->coinControl->destChange)) {
         dialog->setAddress(QString::fromStdString(EncodeDestination(coinControlDialog->coinControl->destChange)));
+    } else if (coinControlDialog->coinControl->destShieldChange) {
+        dialog->setAddress(QString::fromStdString(KeyIO::EncodePaymentAddress(*(coinControlDialog->coinControl->destShieldChange))));
     }
 
-    CTxDestination destChange = (openDialogWithOpaqueBackgroundY(dialog, window, 3, 5) ?
-                                 dialog->getDestination() : CNoDestination());
+    CWDestination destChange = (openDialogWithOpaqueBackgroundY(dialog, window, 3, 5) ?
+                                    dialog->getDestination() :
+                                    CNoDestination());
 
-    if (!IsValidDestination(destChange)) {
+    if (!Standard::IsValidDestination(destChange)) {
         // no change address set
         ui->btnChangeAddress->setActive(false);
     } else {
@@ -626,7 +635,16 @@ void SendWidget::onChangeAddressClicked()
     }
 
     // save change address in coin control
-    coinControlDialog->coinControl->destChange = destChange;
+    const CTxDestination* transparentDest = Standard::GetTransparentDestination(destChange);
+    if (transparentDest) {
+        coinControlDialog->coinControl->destChange = *transparentDest;
+        coinControlDialog->coinControl->destShieldChange = boost::none;
+    }
+    const libzcash::SaplingPaymentAddress* shieldDest = Standard::GetShieldedDestination(destChange);
+    if (shieldDest) {
+        coinControlDialog->coinControl->destShieldChange = *shieldDest;
+        coinControlDialog->coinControl->destChange = CNoDestination();
+    }
     dialog->deleteLater();
 }
 
@@ -702,7 +720,7 @@ void SendWidget::onShieldCoinsClicked()
     }
 
     auto balances = walletModel->GetWalletBalances();
-    CAmount availableBalance = balances.balance - balances.shielded_balance - walletModel->getLockedBalance();
+    CAmount availableBalance = balances.balance - balances.shielded_balance - walletModel->getLockedBalance(true);
     if (availableBalance > 0) {
 
         // Calculate the required fee first. TODO future: Unify this code with the code in coincontroldialog into the model.
@@ -783,11 +801,13 @@ void SendWidget::onCheckBoxChanged()
 
 void SendWidget::onNBLASelected(bool _isTransparent)
 {
-    isTransparent = _isTransparent;
-    resetChangeAddress();
-    resetCoinControl();
-    tryRefreshAmounts();
-    updateStyle(coinIcon);
+    if (isTransparent != _isTransparent) {
+        isTransparent = _isTransparent;
+        resetChangeAddress();
+        resetCoinControl();
+        tryRefreshAmounts();
+        updateStyle(coinIcon);
+    }
 }
 
 void SendWidget::onContactsClicked(SendMultiRow* entry)
@@ -886,10 +906,10 @@ void SendWidget::onContactMultiClicked()
             return;
         }
 
-        bool isStakingAddr = false;
-        auto nblaAdd = Standard::DecodeDestination(address.toStdString(), isStakingAddr);
+        bool isStaking, isExchange, isShielded = false;
+        auto nblaAdd = Standard::DecodeDestination(address.toStdString(), isStaking, isExchange, isShielded);
 
-        if (!Standard::IsValidDestination(nblaAdd) || isStakingAddr) {
+        if (!Standard::IsValidDestination(nblaAdd) || isStaking) {
             inform(tr("Invalid address"));
             return;
         }

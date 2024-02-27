@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin developers
-// Copyright (c) 2017-2020 The PIVX developers
+// Copyright (c) 2017-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -115,13 +115,13 @@ bool static LookupIntern(const std::string& name, std::vector<CNetAddr>& vIP, un
 #else
     aiHint.ai_flags = fAllowLookup ? AI_ADDRCONFIG : AI_NUMERICHOST;
 #endif
-    struct addrinfo* aiRes = NULL;
-    int nErr = getaddrinfo(name.c_str(), NULL, &aiHint, &aiRes);
+    struct addrinfo* aiRes = nullptr;
+    int nErr = getaddrinfo(name.c_str(), nullptr, &aiHint, &aiRes);
     if (nErr)
         return false;
 
     struct addrinfo* aiTrav = aiRes;
-    while (aiTrav != NULL && (nMaxSolutions == 0 || vIP.size() < nMaxSolutions)) {
+    while (aiTrav != nullptr && (nMaxSolutions == 0 || vIP.size() < nMaxSolutions)) {
         CNetAddr resolved;
         if (aiTrav->ai_family == AF_INET) {
             assert(aiTrav->ai_addrlen >= sizeof(sockaddr_in));
@@ -418,7 +418,7 @@ bool static Socks5(std::string strDest, int port, const ProxyCredentials *auth, 
             return error("Error reading proxy authentication response");
         }
         if (pchRetA[0] != 0x01 || pchRetA[1] != 0x00) {
-            return error("Proxy authentication unsuccesful");
+            return error("Proxy authentication unsuccessful");
         }
     } else if (pchRet1[1] == SOCKS5Method::NOAUTH) {
         // Perform no authentication

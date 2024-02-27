@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -349,8 +349,9 @@ void TxDetailDialog::onOutputsClicked()
                     QString labelRes;
                     CTxDestination dest;
                     bool isCsAddress = out.scriptPubKey.IsPayToColdStaking();
+                    bool isExchange = out.scriptPubKey.IsPayToExchangeAddress();
                     if (ExtractDestination(out.scriptPubKey, dest, isCsAddress)) {
-                        std::string address = EncodeDestination(dest, isCsAddress);
+                        std::string address = EncodeDestination(dest, isCsAddress, isExchange);
                         labelRes = QString::fromStdString(address);
                         labelRes = labelRes.left(16) + "..." + labelRes.right(16);
                     } else {

@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -331,7 +331,7 @@ UniValue getbudgetvotes(const JSONRPCRequest& request)
 
     std::string strProposalName = SanitizeString(request.params[0].get_str());
     const CBudgetProposal* pbudgetProposal = g_budgetman.FindProposalByName(strProposalName);
-    if (pbudgetProposal == NULL) throw std::runtime_error("Unknown proposal name");
+    if (pbudgetProposal == nullptr) throw std::runtime_error("Unknown proposal name");
     return pbudgetProposal->GetVotesArray();
 }
 
@@ -455,7 +455,7 @@ UniValue getbudgetinfo(const JSONRPCRequest& request)
     if (request.params.size() == 1) {
         std::string strProposalName = SanitizeString(request.params[0].get_str());
         const CBudgetProposal* pbudgetProposal = g_budgetman.FindProposalByName(strProposalName);
-        if (pbudgetProposal == NULL) throw std::runtime_error("Unknown proposal name");
+        if (pbudgetProposal == nullptr) throw std::runtime_error("Unknown proposal name");
         UniValue bObj(UniValue::VOBJ);
         budgetToJSON(pbudgetProposal, bObj, nCurrentHeight);
         ret.push_back(bObj);
@@ -537,7 +537,7 @@ UniValue mnfinalbudgetsuggest(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "mnfinalbudgetsuggest\n"
                 "\nTry to submit a budget finalization\n"
-                "returns the budget hash if it was broadcasted sucessfully");
+                "returns the budget hash if it was broadcasted successfully");
 
     if (!Params().IsRegTestNet()) {
         throw JSONRPCError(RPC_MISC_ERROR, "command available only for RegTest network");
@@ -553,7 +553,7 @@ UniValue createrawmnfinalbudget(const JSONRPCRequest& request)
         throw std::runtime_error(
                 "createrawmnfinalbudget\n"
                 "\nTry to submit the raw budget finalization\n"
-                "returns the budget hash if it was broadcasted sucessfully"
+                "returns the budget hash if it was broadcasted successfully"
                 "\nArguments:\n"
                 "1. \"budgetname\"    (string, required) finalization name\n"
                 "2. \"blockstart\"    (numeric, required) superblock height\n"
@@ -704,7 +704,7 @@ UniValue mnfinalbudget(const JSONRPCRequest& request)
 
         LOCK(g_budgetman.cs_budgets);
         CFinalizedBudget* pfinalBudget = g_budgetman.FindFinalizedBudget(hash);
-        if (pfinalBudget == NULL) return "Unknown budget hash";
+        if (pfinalBudget == nullptr) return "Unknown budget hash";
         return pfinalBudget->GetVotesObject();
     }
 
@@ -752,6 +752,7 @@ UniValue cleanbudget(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+// clang-format off
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafe argNames
   //  --------------------- ------------------------  -----------------------  ------ --------
@@ -766,12 +767,12 @@ static const CRPCCommand commands[] =
     { "budget",             "preparebudget",          &preparebudget,          true,  {"name","url","npayments","start","address","monthly_payment"} },
     { "budget",             "submitbudget",           &submitbudget,           true,  {"name","url","npayments","start","address","monthly_payment","fee_txid"}  },
 
-    /* Not shown in help */
+    /** Not shown in help */
     { "hidden",             "mnfinalbudgetsuggest",   &mnfinalbudgetsuggest,   true,  {} },
     { "hidden",             "createrawmnfinalbudget", &createrawmnfinalbudget, true,  {"budgetname", "blockstart", "proposals", "feetxid"} },
     { "hidden",             "cleanbudget",            &cleanbudget,            true,  {"try_sync"} },
-
 };
+// clang-format on
 
 void RegisterBudgetRPCCommands(CRPCTable &tableRPC)
 {

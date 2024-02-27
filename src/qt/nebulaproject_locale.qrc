@@ -1,18 +1,18 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/translations">
+        <file alias="bn">locale/nebulaproject_bn.qm</file>
         <file alias="de">locale/nebulaproject_de.qm</file>
         <file alias="en">locale/nebulaproject_en.qm</file>
-        <file alias="en_US">locale/nebulaproject_en_US.qm</file>
         <file alias="es">locale/nebulaproject_es.qm</file>
         <file alias="es_ES">locale/nebulaproject_es_ES.qm</file>
+        <file alias="fa">locale/nebulaproject_fa.qm</file>
         <file alias="fr_FR">locale/nebulaproject_fr_FR.qm</file>
         <file alias="hr_HR">locale/nebulaproject_hr_HR.qm</file>
-        <file alias="it">locale/nebulaproject_it.qm</file>
         <file alias="ko_KR">locale/nebulaproject_ko_KR.qm</file>
         <file alias="nl">locale/nebulaproject_nl.qm</file>
         <file alias="pl">locale/nebulaproject_pl.qm</file>
-        <file alias="ru">locale/nebulaproject_ru.qm</file>
-        <file alias="tr">locale/nebulaproject_tr.qm</file>
-        <file alias="zh_CN">locale/nebulaproject_zh_CN.qm</file>
+        <file alias="pt">locale/nebulaproject_pt.qm</file>
+        <file alias="pt_BR">locale/nebulaproject_pt_BR.qm</file>
+        <file alias="sv">locale/nebulaproject_sv.qm</file>
     </qresource>
 </RCC>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021 The PIVX developers
+# Copyright (c) 2021 The NEBULAPROJECT Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -83,8 +83,7 @@ class GovernanceReorgTest(NebulaprojectTestFramework):
         mn2.initmasternode(self.mnTwoPrivkey, "127.0.0.1:"+str(remoteTwoPort))
         self.stake_and_ping(self.minerAPos, 1, [])
         self.wait_until_mnsync_finished()
-        self.controller_start_masternode(minerA, self.masternodeOneAlias)
-        self.controller_start_masternode(minerA, self.masternodeTwoAlias)
+        self.controller_start_masternodes(minerA, [self.masternodeOneAlias, self.masternodeTwoAlias])
         self.wait_until_mn_preenabled(self.mnOneCollateral.hash, 40)
         self.wait_until_mn_preenabled(self.mnOneCollateral.hash, 40)
         self.send_3_pings([mn1, mn2])
@@ -121,11 +120,11 @@ class GovernanceReorgTest(NebulaprojectTestFramework):
         # Create the finalized budget and vote on it
         self.log.info("Finalizing the budget...")
         self.stake_and_ping(self.minerAPos, 5, [mn1, mn2])
-        assert (minerA.mnfinalbudgetsuggest() is not None)
+        assert minerA.mnfinalbudgetsuggest() is not None
         time.sleep(1)
         self.stake_and_ping(self.minerAPos, 4, [mn1, mn2])
         budgetFinHash = minerA.mnfinalbudgetsuggest()
-        assert (budgetFinHash != "")
+        assert budgetFinHash != ""
         time.sleep(1)
         minerA.mnfinalbudget("vote-many", budgetFinHash)
         self.stake_and_ping(self.minerAPos, 2, [mn1, mn2])

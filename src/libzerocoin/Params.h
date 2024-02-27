@@ -9,7 +9,7 @@
 * @copyright  Copyright 2013 Ian Miers, Christina Garman and Matthew Green
 * @license    This project is released under the MIT license.
 **/
-// Copyright (c) 2017-2019 The PIVX developers
+// Copyright (c) 2017-2021 The NEBULAPROJECT Core developers
 
 #ifndef PARAMS_H_
 #define PARAMS_H_
@@ -91,7 +91,7 @@ public:
 
 	/**
 	 * The initial value for the accumulator
-	 * A random Quadratic residue mod n thats not 1
+         * A random Quadratic residue mod n that's not 1
 	 */
 	CBigNum accumulatorBase;
 
@@ -102,7 +102,7 @@ public:
 	CBigNum minCoinValue;
 
 	/**
-	 * Upper bound on the value for a comitted coin.
+         * Upper bound on the value for a committed coin.
 	 * Required by the accumulator proof.
 	 */
 	CBigNum maxCoinValue;

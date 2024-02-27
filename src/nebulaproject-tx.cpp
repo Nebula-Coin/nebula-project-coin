@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -27,8 +27,13 @@
 
 static bool fCreateBlank;
 static std::map<std::string, UniValue> registers;
+static const int CONTINUE_EXECUTION=-1;
 
-static bool AppInitRawTx(int argc, char* argv[])
+//
+// This function returns either one of EXIT_ codes when it's expected to stop the process or
+// CONTINUE_EXECUTION when it's expected to continue further.
+//
+static int AppInitRawTx(int argc, char* argv[])
 {
     //
     // Parameters
@@ -40,7 +45,7 @@ static bool AppInitRawTx(int argc, char* argv[])
         SelectParams(gArgs.GetChainName());
     } catch(const std::exception& e) {
         fprintf(stderr, "Error: %s\n", e.what());
-        return false;
+        return EXIT_FAILURE;
     }
 
     fCreateBlank = gArgs.GetBoolArg("-create", false);
@@ -85,9 +90,13 @@ static bool AppInitRawTx(int argc, char* argv[])
         strUsage += HelpMessageOpt("set=NAME:JSON-STRING", "Set register NAME to given JSON-STRING");
         fprintf(stdout, "%s", strUsage.c_str());
 
-        return false;
+        if (argc < 2) {
+            fprintf(stderr, "Error: too few parameters\n");
+            return EXIT_FAILURE;
+        }
+        return EXIT_SUCCESS;
     }
-    return true;
+    return CONTINUE_EXECUTION;
 }
 
 static void RegisterSetJson(const std::string& key, const std::string& rawJson)
@@ -725,7 +734,7 @@ static int CommandLineRawTx(int argc, char* argv[])
         strPrint = std::string("error: ") + e.what();
         nRet = EXIT_FAILURE;
     } catch (...) {
-        PrintExceptionContinue(NULL, "CommandLineRawTx()");
+        PrintExceptionContinue(nullptr, "CommandLineRawTx()");
         throw;
     }
 
@@ -740,13 +749,14 @@ int main(int argc, char* argv[])
     SetupEnvironment();
 
     try {
-        if (!AppInitRawTx(argc, argv))
-            return EXIT_FAILURE;
+        int ret = AppInitRawTx(argc, argv);
+        if (ret != CONTINUE_EXECUTION)
+            return ret;
     } catch (const std::exception& e) {
         PrintExceptionContinue(&e, "AppInitRawTx()");
         return EXIT_FAILURE;
     } catch (...) {
-        PrintExceptionContinue(NULL, "AppInitRawTx()");
+        PrintExceptionContinue(nullptr, "AppInitRawTx()");
         return EXIT_FAILURE;
     }
 
@@ -756,7 +766,7 @@ int main(int argc, char* argv[])
     } catch (const std::exception& e) {
         PrintExceptionContinue(&e, "CommandLineRawTx()");
     } catch (...) {
-        PrintExceptionContinue(NULL, "CommandLineRawTx()");
+        PrintExceptionContinue(nullptr, "CommandLineRawTx()");
     }
     return ret;
 }

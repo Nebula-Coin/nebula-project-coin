@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,6 @@
 #include "key_io.h"
 #include "messagesigner.h"
 #include "qt/askpassphrasedialog.h"
-#include "qt/addressbookpage.h"
 #include "qt/nebulaproject/settings/forms/ui_settingssignmessagewidgets.h"
 #include "qt/nebulaproject/qtutils.h"
 #include "qt/walletmodel.h"
@@ -123,22 +122,6 @@ void SettingsSignMessageWidgets::setAddress_SM(const QString& address)
 {
     ui->addressIn_SM->setText(address);
     ui->messageIn_SM->setFocus();
-}
-
-void SettingsSignMessageWidgets::onAddressBookButtonSMClicked()
-{
-    if (walletModel && walletModel->getAddressTableModel()) {
-        AddressBookPage dlg(AddressBookPage::ForSelection, AddressBookPage::ReceivingTab, this);
-        dlg.setModel(walletModel->getAddressTableModel());
-        if (dlg.exec()) {
-            setAddress_SM(dlg.getReturnValue());
-        }
-    }
-}
-
-void SettingsSignMessageWidgets::onPasteButtonSMClicked()
-{
-    setAddress_SM(QApplication::clipboard()->text());
 }
 
 void SettingsSignMessageWidgets::onClearAll()

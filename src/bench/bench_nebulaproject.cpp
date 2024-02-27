@@ -1,5 +1,5 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
-// Copyright (c) 2021 The PIVX developers
+// Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
                   << HelpMessageOpt("-plot-width=<x>", strprintf(_("Plot width in pixel (default: %u)"), DEFAULT_PLOT_WIDTH))
                   << HelpMessageOpt("-plot-height=<x>", strprintf(_("Plot height in pixel (default: %u)"), DEFAULT_PLOT_HEIGHT));
 
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     RandomInit();
@@ -81,4 +81,6 @@ int main(int argc, char** argv)
     CleanupBLSTests();
 
     ECC_Stop();
+
+    return EXIT_SUCCESS;
 }

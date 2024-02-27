@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2021 The PIVX developers
+# Copyright (c) 2021 The NEBULAPROJECT Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
@@ -75,12 +75,12 @@ class GovernanceInvalidBudgetTest(NebulaprojectTestFramework):
         badPropAmount = 500
         proposals.append({"proposalid": badPropId, "payee": badPropPayee, "amount": badPropAmount})
         res = self.minerA.createrawmnfinalbudget(budgetname, blockstart, proposals)
-        assert(res["result"] == "tx_fee_sent")
+        assert res["result"] == "tx_fee_sent"
         feeBudgetId = res["id"]
         time.sleep(1)
         self.stake_and_ping(self.minerAPos, 4, [self.mn1, self.mn2])
         res = self.minerA.createrawmnfinalbudget(budgetname, blockstart, proposals, feeBudgetId)
-        assert(res["result"] == "error") # not accepted
+        assert res["result"] == "error"  # not accepted
 
         self.log.info("Good, invalid budget not accepted.")
 

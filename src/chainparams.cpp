@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -163,12 +163,13 @@ static MapCheckpoints mapCheckpoints = {
     { 5500, uint256S("ba4635271806167ec7b2f16f58b57e6c5e5c0431615a64caeb61f832f4f58df6")},
     { 14000, uint256S("e7b5fc5afa3be42f5a3855d25be2482edf4f7d0be4e369304caf4efb38eac448")},
     { 21843, uint256S("8e1fe36b336473c217bfe3c8401d26a4acbea8d6e6bcf9daefbeb6b0388fbc4f")},
+	{ 584515, uint256S("5558d8c5134ad22ddaca3c1ab9ddb6aeb381a1d466fe516ea74e7ace7b89fab2")},
 };
 
 static const CCheckpointData data = {
     &mapCheckpoints,
     1674159120, // * UNIX timestamp of last checkpoint block
-    55911,    // * total number of transactions between genesis and last checkpoint
+    1345242,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the UpdateTip debug.log lines)
     3000        // * estimated number of transactions per day after checkpoint
 };
@@ -274,6 +275,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 5000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 6000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 287001;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 610000;  // Estimate Feb 29th 12:00 UTC
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		/**
@@ -305,11 +307,12 @@ public:
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.emplace_back("seed1.nebulaproject.io", true);     // Primary DNS Seeder from Fuzzbawls
         vSeeds.emplace_back("seed2.nebulaproject.io", true);    // Secondary DNS Seeder from Fuzzbawls
-        vSeeds.emplace_back("nebulaproject-seed.furszy.net", true);     // Primary DNS Seeder from furszy
+        
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 57);
         base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 80);     // starting with 'S'
+        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9};   // starts with EX
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 75);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x33, 0x93, 0x71, 0x73};
         base58Prefixes[EXT_SECRET_KEY] = {0xab, 0xc9, 0x75, 0xbf};
@@ -337,6 +340,8 @@ public:
         consensus.llmqs[Consensus::LLMQ_400_85] = llmq400_85;
 
         nLLMQConnectionRetryTimeout = 60;
+
+        consensus.llmqChainLocks = Consensus::LLMQ_400_60;
 
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour
@@ -431,6 +436,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 262525;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 332300;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 925056;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 1624280; // Estimate Feb 23 Midnight UTC
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
@@ -452,6 +458,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 66); // Testnet nebulaproject addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 37);  // Testnet nebulaproject script addresses start with '8' or '9'
         base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 58);     // starting with 'W'
+        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9, 0xb1};   // EXT prefix for the address
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 71);     // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
         // Testnet nebulaproject BIP32 pubkeys start with 'DRKV'
         base58Prefixes[EXT_PUBLIC_KEY] = {0x7d, 0xb8, 0x5e, 0x7a};
@@ -480,6 +487,8 @@ public:
         consensus.llmqs[Consensus::LLMQ_400_85] = llmq400_85;
 
         nLLMQConnectionRetryTimeout = 60;
+
+        consensus.llmqChainLocks = Consensus::LLMQ_400_60;
 
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour
@@ -579,6 +588,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 300;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 251;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 576;
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 1000;
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
@@ -596,6 +606,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 55); // Testnet nebulaproject addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 68);  // Testnet nebulaproject script addresses start with '8' or '9'
         base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 36);     // starting with 'W'
+        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9, 0xb1};   // EXT prefix for the address
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 23);     // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
         // Testnet nebulaproject BIP32 pubkeys start with 'DRKV'
         base58Prefixes[EXT_PUBLIC_KEY] = {0x83, 0x7f, 0x09, 0x1d};
@@ -620,6 +631,8 @@ public:
         // long living quorum params
         consensus.llmqs[Consensus::LLMQ_TEST] = llmq_test;
         nLLMQConnectionRetryTimeout = 10;
+
+        consensus.llmqChainLocks = Consensus::LLMQ_TEST;
 
         // Tier two
         nFulfilledRequestExpireTime = 60 * 60; // fulfilled requests expire in 1 hour

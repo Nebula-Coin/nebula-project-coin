@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -626,7 +626,7 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     parent->move(pos);
 }
 
-// Check whether a theme is not build-in
+// Check whether a theme is not built-in
 bool isExternal(QString theme)
 {
     if (theme.isEmpty())
@@ -649,7 +649,7 @@ QString loadStyleSheet()
         fs::path pathAddr = GetDataDir() / "themes/";
         cssName = pathAddr.string().c_str() + theme + "/css/theme.css";
     } else {
-        // Build-in CSS
+        // Built-in CSS
         settings.setValue("fCSSexternal", false);
         if (!theme.isEmpty()) {
             cssName = QString(":/css/") + theme;

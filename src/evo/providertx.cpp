@@ -1,5 +1,5 @@
 // Copyright (c) 2018-2021 The Dash Core developers
-// Copyright (c) 2021 The NEBULAPROJECT Core developers
+// Copyright (c) 2021-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,7 +17,7 @@ std::string ProRegPL::MakeSignString() const
     ss << EncodeDestination(keyIDOwner) << "|";
     ss << EncodeDestination(keyIDVoting) << "|";
 
-    // ... and also the full hash of the payload as a protection agains malleability and replays
+    // ... and also the full hash of the payload as a protection against malleability and replays
     ss << ::SerializeHash(*this).ToString();
 
     return ss.str();

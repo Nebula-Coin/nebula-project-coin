@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2020 The PIVX developers
+// Copyright (c) 2015-2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -249,7 +249,7 @@ void AskPassphraseDialog::textChanged()
     switch (mode) {
     case Mode::Encrypt: // New passphrase x2
         acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty() && // Passphrases are not empty
-                     ui->passEdit2->text() == ui->passEdit3->text();                         // Passphrases match eachother
+                     ui->passEdit2->text() == ui->passEdit3->text();                         // Passphrases match each other
         break;
     case Mode::UnlockAnonymize: // Old passphrase x1
     case Mode::Unlock:          // Old passphrase x1
@@ -258,7 +258,7 @@ void AskPassphraseDialog::textChanged()
         break;
     case Mode::ChangePass: // Old passphrase x1, new passphrase x2
         acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty() && // New passphrases are not empty
-                     ui->passEdit2->text() == ui->passEdit3->text() &&                       // New passphrases match eachother
+                     ui->passEdit2->text() == ui->passEdit3->text() &&                       // New passphrases match each other
                      !ui->passEdit1->text().isEmpty();                                       // Old passphrase is not empty
         break;
     }

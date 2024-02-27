@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 The PIVX developers
+// Copyright (c) 2019-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -483,7 +483,7 @@ void ColdStakingWidget::onSendClicked()
     QList<SendCoinsRecipient> recipients;
     recipients.append(dest);
 
-    // Prepare transaction for getting txFee earlier (exlude delegated coins)
+    // Prepare transaction for getting txFee earlier (exclude delegated coins)
     WalletModelTransaction currentTransaction(recipients);
     WalletModel::SendCoinsReturn prepareStatus = walletModel->prepareTransaction(&currentTransaction, coinControlDialog->coinControl, false);
 

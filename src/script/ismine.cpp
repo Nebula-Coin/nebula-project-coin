@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2016-2019 The PIVX developers
+// Copyright (c) 2016-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -94,6 +94,7 @@ isminetype IsMine(const CKeyStore& keystore, const CScript& scriptPubKey)
             return ISMINE_SPENDABLE;
         break;
     case TX_PUBKEYHASH:
+    case TX_EXCHANGEADDR:
         keyID = CKeyID(uint160(vSolutions[0]));
         if(keystore.HaveKey(keyID))
             return ISMINE_SPENDABLE;

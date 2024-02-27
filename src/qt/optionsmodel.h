@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2013 The Bitcoin developers
-// Copyright (c) 2017-2020 The PIVX developers
+// Copyright (c) 2017-2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -111,7 +111,7 @@ private:
     bool fHideCharts;
     bool fHideZeroBalances;
     bool fHideOrphans;
-    /* settings that were overriden by command-line */
+    /* settings that were overridden by command-line */
     QString strOverriddenByCommandLine;
 
     /// Add option to list of GUI options overridden through command line/config file

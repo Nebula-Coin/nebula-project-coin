@@ -1,26 +1,22 @@
-NEBULAPROJECT Core version *v5.5.0* is now available from:  <https://github.com/nebulaproject-project/nebulaproject/releases>
+NEBULAPROJECT Core version *5.6.0* is now available from:  <https://github.com/nebulaproject-project/nebulaproject/releases>
 
-This is a new major version release, including various bug fixes and performance improvements.
+This is a new major version release, including various bug fixes and performance improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at github: <https://github.com/nebulaproject-project/nebulaproject/issues>
 
 Mandatory Update
 ==============
 
-NEBULAPROJECT Core v5.5.0 is a mandatory update for all users. This release contains new consensus rules and improvements that are not backwards compatible with older versions. Users will need to update their clients before enforcement of this update goes into effect.
+NEBULAPROJECT Core v5.6.0 is a mandatory update for all users. This release contains new consensus rules and improvements that are not backwards compatible with older versions. Users will need to update their clients before enforcement of this update goes into effect.
 
-Update enforcement is currently scheduled to go into effect at the following time:
+Exchange address activation is scheduled to go into effect at the following time:
 
 ```
-Mainnet: block 3,715,200. ~Jan 20th 2023.
+Mainnet: block 4,281,680. ~Feb 29th 2024.
 ```
-Masternodes will need to be restarted once both the masternode daemon and the controller wallet have been upgraded.
-If you are running a Masternode over Tor, please read the "How To Upgrade" section.
+Masternodes will need to be restarted from the controller wallet once both the masternode daemon and the controller wallet have been upgraded.
 
-Note: In preparation for the enforcement, upgraded peers will start rejecting non-upgraded peers few days before the enforcement block height, we recommend everyone to be updated at minimum a week before the final time.
-
-Please report bugs using the issue tracker at github: <https://github.com/nebulaproject-project/nebulaproject/issues>
-
+Note: In preparation for the new address type activation, upgraded peers will start rejecting non-upgraded peers a few days before the exchange address activation block height noted above, we recommend everyone to be updated at least a week prior to this time.
 
 How to Upgrade
 ==============
@@ -30,190 +26,150 @@ If you are running an older version, shut it down. Wait until it has completely 
 Notable Changes
 ==============
 
-New Rewards Structure
----------------------
+### New Exchange Address Type
 
-Starting at block 3,715,200 The rewards structure is being adjusted after many months of discussion, analysis, and agreement from many in the community.
+A new address type has been added for use by exchanges that require additional regulatory compliance. This new "exchange address" functions similarly to a regular NEBULAPROJECT address, but with one distinct difference; transactions originating from a SHIELD address are not allowed to be sent to said exchange addresses.
 
-The new rewards are as follows:
+Creation of these new exchange addresses is available via the new `getnewexchangeaddress` RPC command. It takes an optional `label (string)` to set a label for the address if necessary. Functionality is the same comparatively to `getnewaddress`, `getnewstakingaddress` and `getnewshieldaddress`
 
-|      Party     | Current Rewards | New Rewards |
-| :---           |      :---:      |    :---:    |
-| Staker         |        2        |      4      |
-| Masternode     |        3        |      6      |
-| Budget<sup>1</sup>        |        1        |      10     |
+| Command Name | Purpose | Requires Unlocked Wallet? |
+| ------------ | ------- | ------------------------- |
+| `getnewexchangeaddress` | Creates a new exchange address | Yes |
 
-1: Budget coins are **ONLY** created if there is a valid passing budget proposal requesting a specific amount of coins to be created. This occurs roughly once every 30 days.
+Command is detailed below:
 
-Network Activity Toggle
------------------------
+* `getnewexchangeaddress`
+  ```
+  Returns a new exchange address for receiving payments.
+  Result:
+  "address"    (string) The new exchange address.
+  ```
 
-The GUI wallet now allows for the user to enable/disable all network activity from the Settings page. This can be handy if, for example, you need to restart your router or modem.
+### Use Coin Control for masternode collateral creation
 
-RPC Changes
------------
+It is now possible to use the GUI's Coin Control feature to manually select which inputs you would like to use when creating a new masternode. The previous functionality of automatically selecting sufficient inputs remains however.
 
-### getblock additional verbosity
+### Generate a proposal payout address on-the-fly
 
-The `getblock` command now has an additional verbosity level. The command's second parameter has been changed from a boolean to and integer to support this.
+Proposal creators can now choose to generate a new NEBULAPROJECT address to be used as a proposal's payout address directly within the proposal creation wizard.
 
-- If verbosity is 0, returns a string that is serialized, hex-encoded data for block 'hash'.
-- If verbosity is 1, returns an Object with information about block `hash`.
-- If verbosity is 2, returns an Object with information about block `hash` and information about each transaction.
+### Lockable sapling notes (SHIELD UTXOs)
 
-### getnewshieldaddress label support
+The ability to "lock" SHIELD UTXOs has been added to both the RPC's `lockunspent` command as well as the GUI's Coin Control interface. This brings feature parity between SHIELD and Transparent UTXOs.
 
-The `getnewshieldaddress` command now supports an optional `label` parameter. If specified, the text label will be added to the wallet's address book.
+### startmasternode RPC command cleanup
 
-### New setnetworkactive command
+The `startmasternode` RPC command has had some long-time non-working options removed as part of a cleanup. Notably; the `local` and `many` options no longer exist. This is not a change in functionality, as both options have essentially done nothing for quite some time, and only led to confusion amongst users.
 
-A new `setnetworkactive` command has been added to enable/disable all network activity. The command specs are as follows:
-
-```
-setnetworkactive true|false
-Enable/Disable all p2p network activity.
-
-Result:
-status: (boolean) The final network activity status
-
-Examples:
-setnetworkactive true
-setnetworkactive false
-```
-
-### New scantxoutset command
-
-A new `scantxoutset` command has been added that allows for advanced searching of the unspent transaction outputs (UTXOs). As this is a highly advanced and complex command that won't apply to most end users, the full command spec won't be detailed here.
-
-Please refer to the detailed spec by running `help scantxoutset` or refer to #2780.
-
-*v5.5.0* Change log
+*5.6.0* Change log
 ==============
 
-Detailed release notes follow. This is the complete list of PRs for this release version. For convenience in locating the code changes and accompanying discussion, both the pull request and git merge commit are mentioned.
+Detailed release notes follow. For convenience in locating the code changes and accompanying discussion, both the pull request and git merge commit are mentioned.
 
-### Consensus
-- #2763 `f849beaf2c2` [Consensus] New block rewards (tohsnoom)
-- #2770 `8d3f950bb40` [Consensus] Set testnet new rewards height (Fuzzbawls)
-- #2772 `9be813c8c6d` bugfix new block reward payment and verification (PeterL73)
-- #2781 `414be936487` [Consensus] Set v5.5 activation height for mainnet (Fuzzbawls)
-- #2784 `3c63095b5fe` [Consensus] Bump v5.5 activation height for mainnet (Fuzzbawls)
+### Core Features
+- #2895 `d293ad272c1c6545a54a80e60c32142fcd455564` [Core][GUI][RPC] Exchange Address (Liquid369)
 
-### RPC
-- #2732 `7216dc980f4` Remove cs_main lock from blockToJSON (random-zebra)
-- #2734 `f79e009fe37` [RPC] Consistently use ParseHashV to validate hash inputs in rpc (random-zebra)
-- #2746 `e3d54848845` Fix mnconnect missing parameter and rename cxxtimer.hpp (random-zebra)
-- #2774 `768dfb5a5f1` [RPC] add include_delegated to vRPCConvertParams (PeterL73)
-- #2779 `abb888b0ac7` [RPC] Backport getblock verbosity (tecnovert)
-- #2780 `8cc21819d80` [RPC] Backport scantxoutset from BitCoin Core v0.17.2 (PeterL73)
+### Build System
+- #2758 `3e2eb99bc82b7356a6dd779c5098a5336a55e22a` [Build] Update httpserver.cpp (andi448)
+- #2789 `5c5565924a747e26264430dead72d509fafcded5` [Build] Add Liquid369 gpg key (Liquid369)
+- #2799 `e8cf23395ebc83f6b5dde49f497ced0e40baf5dd` [Build] Bump master to 5.5.99 (pre-6.0) (Fuzzbawls)
+- #2803 `ad9ecf88ab89a775fa18b4f52fdd6b5cdf170981` [Build] Bump copyright year to 2023 (Fuzzbawls)
+- #2816 `c36e8c5b51cac3eae4be6cac4e5596876bc40ae1` [Build] Fix build with configure flag --enable-mining-rpc (PeterL73)
+- #2821 `523877c255915567a6d09795c3cdb51a38c6ac98` [Build] Disable libsep256k1's openssl tests (Fuzzbawls)
+- #2839 `aadf4bb2c2f578712b1050d29ad4b526ebb14297` [Build] Minor fixups and simplifications for macdeploy (Fuzzbawls)
+- #2868 `30ae211daf009234d9e64ef7c4a8b0f06293ca15` [Build] Add header files (Duddino)
+- #2896 `ea3d1d6b3f838043a5eaf438abb9adbfba39fde7` [Build] Further security and symbol checking updates (Fuzzbawls)
+- #2899 `badb446e0b5c8ade5b26d4c944f96cb64afed44e` [Build] Update copyright year to 2024 (Fuzzbawls)
+- #2901 `cdda6450ba6a16c71db62e66436b98471d9c8b8d` [Build] Add duddino GPG key (Duddino)
 
-### Build Systems
-- #2650 `7e2d1aff1f8` Update bls-signatures subtree to latest version (furszy)
-- #2694 `060a0a5656d` [Build] Bump master to 5.4.99 (furszy)
-- #2695 `2d37006acb1` [CLI][Build] Guard libevent error messages (Fuzzbawls)
-- #2702 `f2b45fded0c` [Core][Build] Fix atomic data races in BLS operations (Fuzzbawls)
-- #2710 `5c5bb069aa9` [Build] Clean up additional coverage and test data (Fuzzbawls)
-- #2731 `04ae0156cca` [Build] Add CMake option to compile with debug flags (Fuzzbawls)
-- #2738 `37635f49076` [Build] Fix multi-line comment warning (Fuzzbawls)
-- #2740 `0e757ad2c9b` [Lint] Introduce lint-includes.sh script (Fuzzbawls)
-- #2759 `d2a30915ca2` [Build][CMake] Use CMake internal instead of custom command for moc (Fuzzbawls)
-- #2767 `291ef05f538` [GA] Run unit/functional tests on native macOS 11 (Fuzzbawls)
-- #2769 `bb8b073d108` [GA] Disable Unit tests for win64 build in GA (Fuzzbawls)
-- #2771 `f656ea9f9e5` [GA] Use explicit llvm version for macOS CMake build. (Fuzzbawls)
+### Depends System
+- #2826 `a161b1d31a0e15116fd8968790d97ce8d1be1a01` [Depends] Bump zlib to v1.2.13 (Fuzzbawls)
+- #2872 `8c4ffa642981ccff126f9fe138117177861684cb` [Depends] Bump Rust toolchain to 1.69.0 (Fuzzbawls)
+
+### P2P Protocol and Network Code
+- #2824 `cfc110e0a0750cb8903a17704f9e9c59b344cf9a` [P2P] Rate limiting rumored address processing (Liquid369)
+- #2849 `39656e39125ab0eea58459e1f295aa6122203298` [P2P] Do not fully sort all nodes for addr relay (Liquid369)
+- #2850 `9ea6a1bd39951b33b9ece40b30642bda00d42524` [P2P] Increase performance of Good (Liquid369)
+- #2851 `f07f32c09a99542f292154051fadd13c2cdee40f` [Net] Add Liquid DNS Seeder for mainnet (Liquid369)
 
 ### GUI
-- #2606 `f6145532b57` [Net][GUI][RPC] Add enable/disable network activity feature (João Barbosa)
-- #2655 `7d237ad71e8` [GUI] Clean not longer used addnewaddressdialog. (furszy)
-- #2673 `0f3ecb76a96` [Cleanup] Remove unused `RecentRequestsTableModel` and `PlatformStyle` (random-zebra)
-- #2705 `5851e7574cf` [GUI][BugFix] Fix missing dashboard chart date filter initialization at startup (furszy)
-- #2716 `2f8a0341b6b` [GUI] Don't error on zero amount for new cold staking address (Fuzzbawls)
-- #2717 `6c33de8de9c` [GUI][Bug] Don't set a proposal's status to PASSING_NOT_FUNDED prematurely (Fuzzbawls)
-- #2721 `bedf4de5948` [GUI] Decouple legacy MNs code from the GUI elements (furszy)
-- #2727 `48759887441` [trivial] Fixing several QT related circular dependencies (furszy)
-- #2760 `4c466f41984` [GUI][BUG] Properly validate proposal creation Name/URL (Fuzzbawls)
-- #2768 `c439ec7a12c` [GUI] Fix Passing Not Funded logic (Fuzzbawls)
+- #2798 `9e2a102f3d3f19c3259e7771d8a073308f3dc8db` [GUI] Adds copy button to proposal recipient address (Liquid369)
+- #2828 `89f3f9853d414ae607a4b85055ee470735ba0447` [GUI] Proposal Generate Address (Liquid369)
+- #2829 `106e72e59ef4c6ac116eca55b29adcce90b4212a` [GUI] Fix bug in proposal creation (panleone)
+- #2842 `744b3241943006936bf9747d87982ec7f463c6d7` [GUI] Show memo in self s->s txs (panleone)
+- #2852 `aca81a13cfb6f3e1cbb4999107d065510b61473c` [GUI] Fix ban actions in peer list (Liquid369)
+- #2854 `a428bc28b645d0da77de4b40d19a7cfa6ff63af1` [GUI] Don't always clear coin control (panleone)
+- #2859 `fec4cfe2af5d5474de4b6a70320057d19bd913e1` [GUI] CoinControl Change (panleone)
+- #2860 `62d745982e96a48ecbaed364d1b055f9ad222719` [Bug] Fix toggle lock button (panleone)
+- #2862 `1f0db3868ad577d72c44171e9d4f27f9aa923fc6` [GUI] CoinControl for masternodes (panleone)
+- #2863 `6c26a0eb772dbfccbdbaff0129068f1427b4f843` [Bug] [GUI] Fix focus on send transaction (panleone)
+- #2865 `559e4f1dc39e1e65029462d92d42e6c7e40d5697` [GUI] Add differentiation for Shielded Memos (Liquid369)
+- #2874 `d0cf09312df121894803386757ac3ef3bc9d2f2c` [GUI] Periodic make translate (Fuzzbawls)
+- #2893 `012387d563647a2a1898aa381dada16eba346761` [GUI] Remove unused addressbookpage references (Fuzzbawls)
 
-### Testing Frameworks
-- #2685 `48741d8993d` [QA] Use single node in sapling_changeaddresses (random-zebra)
-- #2701 `6ed103f2049` [test] sapling_key_import_export.py whitelist peers to speed up tx relay. (furszy)
-- #2711 `73ac5f699e2` [Tests] Improve coverage for merkleblock and bloom code (Fuzzbawls)
-- #2724 `bc3a9778ae3` [test] wallet_zapwallettxes.py whitelist peers to speed up tx relay. (furszy)
-- #2725 `b6c6a8f36f2` [test] Rewrite rpc_wallet_encrypted_wallet_sapzkeys unit test as functional test (furszy)
-- #2747 `4e46b143241` Add proper bech32 encoding/decoding utilities to python framework (random-zebra)
-- #2766 `d10832cbc6b` [Tests] Native secp256k1 for functional tests (Fuzzbawls)
-
-### Tier Two / Budget
-- #2394 `d277bdffcd7` [budget] Clean pre-v5 consensus guards for proposal start block and max payment amount (furszy)
-- #2648 `7937e8e2eb9` [wallet] Reopen CDBEnv after encryption instead of shutting down (furszy)
-- #2657 `1709f6bf21d` [TierTwo] Fix more circular dependencies. (furszy)
-- #2658 `5dc6b88fde4` [budget] Do not count votes twice after calling GetBudgetWithHighestVoteCount. (furszy)
-- #2684 `ab30cd257ab` [Refactor] Move tier two managers initialization from init.cpp to tiertwo/init.cpp (furszy)
-- #2686 `204770a6879` [TierTwo] Introduce network requests manager (furszy)
-- #2690 `017953ee087` [Refactoring] Decouple and encapsulate tier two synchronization state (random-zebra)
-- #2699 `da647d42e90` [Refactor] Deduplicate final commitment validity checks (random-zebra)
-- #2723 `1eaa10c3884` Finish moving tier two initialization code from init.cpp to tiertwo/init.cpp and add disabledkg init flag (furszy)
-- #2735 `3b59032bf98` Further TierTwo init encapsulation (furszy)
-- #2749 `5a7b5141a7f` [Budget] Use space and time efficient data structure to check for already sent item sync requests (furszy)
+### RPC/REST
+- #2833 `25bcf8600faff97bb63e60440d65193d426bb9f2` [RPC] Cleanup startmasternode command (Fuzzbawls)
+- #2856 `f02ab524131e79805910c846a8569ba3beea9145` [RPC] Fix Invalidateblock (panleone)
+- #2873 `05fdf6040adf0b3517b294b3a8729400522ee06e` [RPC][MN] Serialize in ADDRV2 for TorV3 in RPC's (Liquid369)
 
 ### Wallet
-- #2674 `ac52d737bcc` [Refactor] Prevent multiple calls to ExtractDestination (random-zebra)
-- #2675 `4b8b541f5a3` [Wallet] Clear Shield notes witness cache before a full rescan (random-zebra)
-- #2679 `6a992f853a6` [Wallet] Avoid second mapWallet lookup (random-zebra)
-- #2680 `273bca3c563` [Refactor] Avoid double lookups in sapling maps (random-zebra)
-- #2683 `50a6d260b6e` pre-filter coins by destination in AvailableCoins (random-zebra)
-- #2704 `f2df53c3da2` [Wallet] Crypter code cleanup (furszy)
-- #2707 `03f9946950b` [validation] Create zerocoin coinspends cache (furszy)
-- #2736 `3aefab3c374` [wallet] fix ATMP call not contemplating the "missing inputs" error (furszy)
-- #2750 `fc63a6fa0e8` [Refactor] Create coinstake outputs moved from stakeInput to the wallet class. (furszy)
+- #2782 `0bd96c8a188547be8ce4bb5415610e0285ec76d2` [Wallet] Fix stake split output count calculation (PeterL73)
+- #2812 `ac8a74dc2a946df609c6d200a9367f1264fb638f` [Wallet] Fix AutoCombineDust and improve setautocombinethreshold (panleone)
+- #2861 `326321d511e600a0d6a75350eb6cfe9832604528` [Wallet] Locked sapling notes (panleone)
 
-### P2P Network
-- #2632 `97728e56733` [net] Connman options encapsulation (furszy)
-- #2639 `a8d228cccc6` [net] disallow sending messages before receiving verack + enable p2p_leak.py test (furszy)
-- #2676 `8eb5087be1a` [Net_processing]  Do not log "notfound" msg as unknown. (furszy)
-- #2706 `f2ec56945c2` [Net] Implement poll() (Patrick Strateman)
-- #2739 `1f133b1321c` Guard "-maxconnections" arg if the node is a Masternode. (furszy)
+### Testing Frameworks
+- #2822 `0d779aa53d7e67a73e968e5c04fe4446a1021d98` [Tests] Replace hashlib.ripemd160 with native implementation (Fuzzbawls)
+- #2832 `6e50e49eea89b8ea15e4bcf8def69f4b36b4116a` [Tests] Run tiertwo and sapling functional tests by default (Fuzzbawls)
+- #2840 `0d2051a82c5fa5fb28c43bc9e1fa2c92ae7b4d78` [Tests] Add further RPC test coverage for cold staking (Fuzzbawls)
+- #2867 `3a7ab3d715e54ef9583b436a52315ec168193977` [Core][Tests] Cleanup HTTPServer start and stop (Liquid369)
+- #2877 `42643088e5052faab4fb4fa9a53f7bdc05970e52` [Tests][Scripts] Bump Python version to 3.8 and add more linting (Fuzzbawls)
+- #2878 `0ab665dfef9082acff0e32d62df46b7ca859d1d1` [Lint] lint spelling (Fuzzbawls)
+- #2881 `6829cfd172b410e4de169bea3f9663f4b220c949` [Tests] Fix random fee generation (panleone)
 
-### Misc Core
-- #2681 `4645a54f0d8` [BUG] Fix possible crashes at shutdown (Matt Corallo)
-- #2697 `4d2d7708293` Kill 'znblachain' files and (furszy)
-- #2700 `771c84b2d3d` avoid sensitive data in core dumps (Vasil Dimov)
-- #2709 `5b795e8abcf` [Trivial] Fix LogPrintf arguments in WipeAccChecksums (Fuzzbawls)
-- #2715 `fda28bd0605` [Refactor] Add LookupBlockIndex (furszy)
-- #2726 `7b265f22e87` Improve PID file error and datadir handling (Hennadii Stepanov)
-- #2728 `be27fbac09e` fix missing cs_main lock in AppInitMain and LoadExternalBlockFile (random-zebra)
+### Scripts and Tools
+- #2806 `e4634a5d53d24502056f22f95379b22c69275579` [Tools] Sanitize existing clang-format rules (Fuzzbawls)
+- #2827 `38df19c2672b60c90ec315fd781dde3183bb81d1` [Tools] Fix case typo in .clang-format (Fuzzbawls)
+- #2855 `616cc4823f6a04cdcf8790ab5d7766189064eaf3` [Scripts] Delete redundant util/fetch-params.sh (Liquid369)
+- #2892 `658f2fe46e27b7db1b2b7df31725383cfcd13fa1` [Scripts][GUI] Overhaul translation ingestion script and update translations from Transifex (Fuzzbawls)
 
-### Docs
-- #2656 `e844bd6cdf4` [Doc] Remove assets-attribution.md file. (furszy)
-- #2693 `cfddfbf38bf` [Doc] Add v5.4.0 historical release notes (furszy)
+### Continuous Integration
+- #2787 `286c318db2fc451bfdea2605ff11aabf68fb0298` [GA] Update depreciated actions (Fuzzbawls)
+- #2817 `9240e153f3074cb0537e72c887e1715449e7b7a1` [GA] Bump GA linux workers to Ubuntu 20.04 (Fuzzbawls)
+- #2825 `e1e376e494fab2fac33d85bb3477ef8f776e378e` [GA] Reorganize and optimize GA runner flow (Fuzzbawls)
+- #2857 `05e73a0ef50c2886c48faf1d330d810f7112584b` [GA] Overhaul GA caches (Fuzzbawls)
+- #2891 `028a1eaa1d8cdc1ff3ebe8463182189007092094` [GA] Fix macOS runs (Fuzzbawls)
+- #2897 `c53095a9ed8b672c15d22f3ef21a15cbc427d3be` [GA] Update actions to node20 versions (Fuzzbawls)
+- #2903 `03f038b82fa724978b112def30192abdfb279904` [GA] Link Boost 1.76 regardless of pre-existing version (Fuzzbawls)
+
+### Internal Libraries
+- #2753 `aa9be76d1313a86db0c8411c85ee518ef3f2a526` [Libs] Re-introduce immer header-only library as a git subtree (Fuzzbawls)
+- #2807 `59e4c1acb092abc46b825fd461a86fef0e80bd71` [Libs] Update chiabls subtree library (Fuzzbawls)
+- #2853 `5d71589ab8043772fe87df982a6f3d6d7effb608` [Libs] Bump chiabls subtree (Fuzzbawls)
+- #2870 `7488a2721da8a4defc08d145dadd3c3065e2735d` [Libs] Update librustzcash (Duddino)
+
+### Documentation
+- #2788 `d3acaa09f5fd9d5ef4a95ca7cd2b1a674e7851ce` [Doc] Don't include dependency paths in Doxygen or Coverage (Fuzzbawls)
+- #2846 `28c9eaba5d89b7dd77d128bd88d2465b4d883e3c` [Doc] Remove bitness from nebulaproject-qt help message and manpage (Fuzzbawls)
+- #2894 `3c1f32fb1258aa80f9683e0a84f466a8535fea98` [Doc] Update Ubuntu ppa source for db4.8 (Fuzzbawls)
+- #2898 `a949c658b815bc2e817c238aab00ed4711844939` [Doc] Update gpg keyserver URL (Fuzzbawls)
+
+### Miscellaneous
+- #2266 `8b983704a31eddd16d036e7ccadccdad8d304c11` [Cleanup] Use C++11 nullptr instead of NULL (Fuzzbawls)
+- #2793 `e9c73031615b9263019102721b4e3e077fc556b2` [Consensus] Set v5.5.0 superblock checkpoint block hash. (Fuzzbawls)
+- #2841 `14d859ccb593a684013e2c1526ef2b19ec4b6a5b` [Core] Remove unused PoW block signing code (panleone)
+- #2845 `83dd4542659aad2eaeb1ca2f84ff3388a06fa71b` [Core] Unify binary exit codes (Fuzzbawls)
+- #2847 `05f0662f73a78261e0d8d55a4053afdd2e4aee18` [ZMQ] Call va_end() on va_start()ed args. (Fuzzbawls)
+- #2848 `b33843bfdba8e5935bcaa0bfd37de2c892329922` [Misc] Cleanup whitespace and guard RPC tables from clang-format (Fuzzbawls)
+- #2900 `9a60dd86d7d17f4aa922c69831950a3a997cb2a1` [Core] Bump Protocol Version to 70927 (Liquid369)
 
 ## Credits
 
 Thanks to everyone who directly contributed to this release:
-- Alexander Block
-- Andrew Chow
-- Chun Kuan Lee
-- Cory Fields
+- Duddino
 - Fuzzbawls
-- Hennadii Stepanov
-- James O'Beirne
-- João Barbosa
-- Luke Dashjr
-- MarcoFalke
-- Marko Bencun
-- Martin Ankerl
-- Matt Corallo
-- Patrick Strateman
+- Liquid369
 - PeterL73
-- Pieter Wuille
-- Tim Ruffing
-- UdjinM6
-- Vasil Dimov
-- furszy
-- lmanners
-- practicalswift
-- random-zebra
-- tecnovert
-- tohsnoom
-- xdustinface
+- andi448
+- panleone
 
 As well as everyone that helped translating on [Transifex](https://www.transifex.com/projects/p/nebulaproject-project-translations/), the QA team during Testing and the Node hosts supporting our Testnet.

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The PIVX developers
+// Copyright (c) 2021 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,6 +17,7 @@ public:
 
 protected:
     // CValidationInterface
+    void AcceptedBlockHeader(const CBlockIndex* pindexNew) override;
     void UpdatedBlockTip(const CBlockIndex *pindexNew, const CBlockIndex *pindexFork, bool fInitialDownload) override;
     void NotifyMasternodeListChanged(bool undo, const CDeterministicMNList& oldMNList, const CDeterministicMNListDiff& diff) override;
 };

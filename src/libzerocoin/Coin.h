@@ -9,7 +9,7 @@
  * @copyright  Copyright 2013 Ian Miers, Christina Garman and Matthew Green
  * @license    This project is released under the MIT license.
  **/
-// Copyright (c) 2017-2019 The PIVX developers
+// Copyright (c) 2017-2021 The NEBULAPROJECT Core developers
 
 #ifndef COIN_H_
 #define COIN_H_
@@ -57,7 +57,7 @@ public:
 
     /**Generates a public coin
      *
-     * @param p cryptographic paramters
+     * @param p cryptographic parameters
      * @param coin the value of the commitment.
      * @param denomination The denomination of the coin.
      */

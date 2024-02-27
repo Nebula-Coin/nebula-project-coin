@@ -1,5 +1,5 @@
 // Copyright (c) 2018 The Bitcoin Core developers
-// Copyright (c) 2022 The PIVX developers
+// Copyright (c) 2022 The NEBULAPROJECT Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -363,7 +363,7 @@ enum class ParseScriptContext {
     P2SH,
 };
 
-/** Parse a constant. If succesful, sp is updated to skip the constant and return true. */
+/** Parse a constant. If successful, sp is updated to skip the constant and return true. */
 bool Const(const std::string& str, Span<const char>& sp)
 {
     if ((size_t)sp.size() >= str.size() && std::equal(str.begin(), str.end(), sp.begin())) {
@@ -373,7 +373,7 @@ bool Const(const std::string& str, Span<const char>& sp)
     return false;
 }
 
-/** Parse a function call. If succesful, sp is updated to be the function's argument(s). */
+/** Parse a function call. If successful, sp is updated to be the function's argument(s). */
 bool Func(const std::string& str, Span<const char>& sp)
 {
     if ((size_t)sp.size() >= str.size() + 2 && sp[str.size()] == '(' && sp[sp.size() - 1] == ')' && std::equal(str.begin(), str.end(), sp.begin())) {
