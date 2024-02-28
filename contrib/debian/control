@@ -28,9 +28,9 @@ Build-Depends: debhelper,
  libzmq3-dev,
  dh-systemd
 Standards-Version: 3.9.2
-Homepage: http://www.nebulaproject.org
-Vcs-Git: git://github.com/Nebula-Project/nebula-project.git
-Vcs-Browser: http://github.com/Nebula-Project/nebula-project
+Homepage: https://www.nebulaproject.io
+Vcs-Git: git://github.com/Nebula-Coin/nebula-project-coin.git
+Vcs-Browser: https://github.com/Nebula-Coin/nebula-project-coin
 
 Package: nebulaprojectd
 Architecture: any

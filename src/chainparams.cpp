@@ -163,13 +163,13 @@ static MapCheckpoints mapCheckpoints = {
     { 5500, uint256S("ba4635271806167ec7b2f16f58b57e6c5e5c0431615a64caeb61f832f4f58df6")},
     { 14000, uint256S("e7b5fc5afa3be42f5a3855d25be2482edf4f7d0be4e369304caf4efb38eac448")},
     { 21843, uint256S("8e1fe36b336473c217bfe3c8401d26a4acbea8d6e6bcf9daefbeb6b0388fbc4f")},
-	{ 584515, uint256S("5558d8c5134ad22ddaca3c1ab9ddb6aeb381a1d466fe516ea74e7ace7b89fab2")},
+    { 584161, uint256S("b26622b18dc4c275f5739be2857445667838e9925d48cdecf4c010be72188611")},
 };
 
 static const CCheckpointData data = {
     &mapCheckpoints,
     1674159120, // * UNIX timestamp of last checkpoint block
-    1345242,    // * total number of transactions between genesis and last checkpoint
+    1344354,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the UpdateTip debug.log lines)
     3000        // * estimated number of transactions per day after checkpoint
 };
@@ -275,7 +275,7 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_V5_2].nActivationHeight          = 5000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_3].nActivationHeight          = 6000;
         consensus.vUpgrades[Consensus::UPGRADE_V5_5].nActivationHeight          = 287001;
-        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 610000;  // Estimate Feb 29th 12:00 UTC
+        consensus.vUpgrades[Consensus::UPGRADE_V5_6].nActivationHeight          = 640000;  // Estimate Feb 29th 12:00 UTC
         consensus.vUpgrades[Consensus::UPGRADE_V6_0].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 		/**
@@ -312,7 +312,7 @@ public:
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 57);
         base58Prefixes[STAKING_ADDRESS] = std::vector<unsigned char>(1, 80);     // starting with 'S'
-        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9};   // starts with EX
+        base58Prefixes[EXCHANGE_ADDRESS] = {0x01, 0xb9, 0xa3};   // starts with EXM
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 75);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x33, 0x93, 0x71, 0x73};
         base58Prefixes[EXT_SECRET_KEY] = {0xab, 0xc9, 0x75, 0xbf};

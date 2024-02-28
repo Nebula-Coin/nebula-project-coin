@@ -906,7 +906,7 @@ void SendWidget::onContactMultiClicked()
             return;
         }
 
-        bool isStaking, isExchange, isShielded = false;
+        bool isStaking = false, isExchange = false, isShielded = false;
         auto nblaAdd = Standard::DecodeDestination(address.toStdString(), isStaking, isExchange, isShielded);
 
         if (!Standard::IsValidDestination(nblaAdd) || isStaking) {

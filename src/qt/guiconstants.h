@@ -50,7 +50,7 @@ static const int MAX_URI_LENGTH = 255;
 
 
 #define QAPP_ORG_NAME "NEBULAPROJECT"
-#define QAPP_ORG_DOMAIN "nebulaproject.org"
+#define QAPP_ORG_DOMAIN "nebulaproject.io"
 #define QAPP_APP_NAME_DEFAULT "NEBULAPROJECT-Qt"
 #define QAPP_APP_NAME_TESTNET "NEBULAPROJECT-Qt-testnet"
 

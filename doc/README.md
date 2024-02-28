@@ -30,7 +30,7 @@ Drag NEBULAPROJECT-Qt to your applications folder, and then run NEBULAPROJECT-Qt
 
 * See the documentation at the [NEBULAPROJECT Wiki](https://github.com/Nebula-Project/nebula-project/wiki)
 for help and more information.
-* Ask for help on the [NEBULAPROJECT Forum](http://forum.nebulaproject.org/).
+* Ask for help on the [NEBULAPROJECT Forum](https://forum.nebulaproject.io/).
 * Join our Discord server [Discord Server](https://discord.nebulaproject.io)
 
 Building
@@ -58,7 +58,7 @@ The NEBULAPROJECT repo's [root README](/README.md) contains relevant information
 - [Dnsseed Policy](dnsseed-policy.md)
 
 ### Resources
-* Discuss on the [NEBULAPROJECT](http://forum.nebulaproject.org/) forum.
+* Discuss on the [NEBULAPROJECT](https://forum.nebulaproject.io/) forum.
 * Join the [NEBULAPROJECT Discord](https://discord.nebulaproject.io).
 
 ### Miscellaneous

@@ -184,7 +184,7 @@
         <file alias="img-empty-staking-off">nebulaproject/res/img/img-empty-staking-off.svg</file>
         <file alias="img-empty-staking-on">nebulaproject/res/img/img-empty-staking-on.svg</file>
         <file alias="img-empty-transactions">nebulaproject/res/img/img-empty-transactions.svg</file>
-        <file alias="img-nav-logo">nebulaproject/res/img/img-nav-logo.svg</file>
+        <file alias="img-nav-logo">nebulaproject/res/img/img-nav-logo.png</file>
         <file alias="img-qr">nebulaproject/res/img/img-qr.svg</file>
         <file alias="ic-contact-arrow-down">nebulaproject/res/img/ic-contact-arrow-down.svg</file>
         <file alias="ic-contact-arrow-down-white">nebulaproject/res/img/ic-contact-arrow-down-white.svg</file>

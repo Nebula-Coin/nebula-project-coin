@@ -203,7 +203,7 @@ class MasternodeGovernanceBasicTest(NebulaprojectTier2TestFramework):
         self.log.info("preparing budget proposal..")
         firstProposal = Proposal(
             "super-cool",
-            "https://forum.nebulaproject.org/t/test-proposal",
+            "https://forum.nebulaproject.io/index.php?board=10.0",
             2,
             self.miner.getnewaddress(),
             300
